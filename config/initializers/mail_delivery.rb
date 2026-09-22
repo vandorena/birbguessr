@@ -23,14 +23,18 @@ Rails.application.configure do
   credentials = Rails.application.credentials.smtp
   settings = MailDelivery.smtp_settings(credentials: credentials)
 
-  if settings
+  # The test environment is never touched here. Initializers run AFTER
+  # config/environments/*, so anything set below would override test.rb's
+  # `delivery_method = :test`. That is not just a broken assertion: dotenv loads
+  # .env in test too, so as soon as real SMTP credentials existed the suite
+  # started opening SMTP connections and attempting live sends to the fabricated
+  # addresses in the fixtures. Guard the whole block, not just the :file branch.
+  if Rails.env.test?
+    config.action_mailer.delivery_method = :test
+  elsif settings
     config.action_mailer.delivery_method = :smtp
     config.action_mailer.smtp_settings = settings
   elsif Rails.env.development?
-    # development only, NOT `Rails.env.local?` -- that includes test, and
-    # initializers run after config/environments/*, so this would silently
-    # override test.rb's `delivery_method = :test` and empty out
-    # ActionMailer::Base.deliveries for every mailer test.
     config.action_mailer.delivery_method = :file
     config.action_mailer.file_settings = { location: Rails.root.join("tmp/mails") }
   end

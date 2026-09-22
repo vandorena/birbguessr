@@ -7,8 +7,11 @@
 # Ignore bundler config.
 /.bundle
 
-# Ignore all environment files.
+# Ignore all environment files, but DO commit the template. Without the negation
+# the /.env* rule above silently swallows .env.example, and `git add -A` skips it
+# without a word -- which is exactly what happened here.
 /.env*
+!/.env.example
 
 # Ignore all logfiles and tempfiles.
 /log/*
@@ -30,13 +33,15 @@
 
 /public/assets
 
-# Ignore key files for decrypting credentials and more.
+# Ignore key files for decrypting credentials and more. The second rule covers
+# per-environment keys (config/credentials/production.key), which the first misses.
 /config/*.key
+/config/credentials/*.key
 
-
-# Local environment variables — never commit real secrets.
-/.env
-/.env*.local
 
 /app/assets/builds/*
 !/app/assets/builds/.keep
+
+# macOS finder droppings. Arguably belong in a global gitignore, but every
+# contributor on a Mac would have to remember to set one up.
+.DS_Store

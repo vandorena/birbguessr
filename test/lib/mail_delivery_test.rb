@@ -78,3 +78,13 @@ class MailDeliveryTest < ActiveSupport::TestCase
     assert_includes message.subject, "real@brown.edu"
   end
 end
+
+# Regression guard for the whole initializer, not just MailDelivery. dotenv loads
+# .env in the test environment as well, so once real SES credentials existed the
+# initializer flipped this to :smtp and the suite began attempting live sends.
+class MailDeliveryEnvironmentTest < ActiveSupport::TestCase
+  test "the test environment never sends mail for real" do
+    assert_equal :test, ActionMailer::Base.delivery_method,
+                 "config/initializers/mail_delivery.rb must not override test.rb's :test delivery"
+  end
+end
