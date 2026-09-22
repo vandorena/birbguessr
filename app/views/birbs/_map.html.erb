@@ -1,0 +1,59 @@
+<%# The controller element wraps the form as well as the map, so the hidden
+    fields below are inside its target scope. Moving data-controller onto the
+    canvas itself fails half-quietly: the map still draws and the targets vanish.
+
+    pins is [] for anyone who has not guessed -- BirbsController never loads
+    them, so there is nothing here to hide. %>
+<div data-controller="birb-map"
+     data-birb-map-bounds-value="<%= Campus::BOUNDS.to_json %>"
+     data-birb-map-tile-url-value="<%= Campus::TILE_URL %>"
+     data-birb-map-attribution-value="<%= Campus::TILE_ATTRIBUTION %>"
+     data-birb-map-editable-value="<%= editable %>"
+     data-birb-map-pins-value="<%= pins.to_json %>"
+     data-birb-map-buildings-url-value="<%= asset_path(Campus::Buildings::ASSET) %>">
+
+  <div class="birb-map__canvas"
+       data-birb-map-target="canvas"
+       role="img"
+       aria-label="<%= aria_label %>"></div>
+
+  <%# The buildings are drawn to a canvas, which is nothing at all to a screen
+      reader, and the map needs JavaScript besides. This is the same campus as
+      text. Collapsed, because it is 181 names. %>
+  <details>
+    <summary><%= pluralize(Campus::Buildings.summary.count, "building") %> on campus</summary>
+
+    <ul>
+      <% Campus::Buildings.summary.names.each do |name| %>
+        <li><%= name %></li>
+      <% end %>
+    </ul>
+
+    <p>
+      Traced by OpenStreetMap contributors, from
+      <%= link_to Campus::Buildings::SOURCE,
+            "https://www.openstreetmap.org/#{Campus::Buildings::SOURCE}" %>.
+      Not all of them are named there.
+    </p>
+  </details>
+
+  <% if editable %>
+    <%# The route is `resource :guess`, singular, so the path is named
+        birb_guess_path -- which form_with's model: form would pluralise. %>
+    <%= form_with url: birb_guess_path(birb), scope: :guess do |form| %>
+      <%= form.hidden_field :latitude, data: { birb_map_target: "latitude" } %>
+      <%= form.hidden_field :longitude, data: { birb_map_target: "longitude" } %>
+
+      <%# The only non-visual account of where the pin is. A circle drawn on a
+          map is nothing at all to a screen reader. %>
+      <p data-birb-map-target="readout" aria-live="polite">No pin yet. Click the map.</p>
+
+      <%= form.submit "Lock in my guess", disabled: true,
+            data: { birb_map_target: "submit" } %>
+    <% end %>
+
+    <noscript>
+      <p>The map needs JavaScript. Without it you cannot place a guess.</p>
+    </noscript>
+  <% end %>
+</div>

@@ -1,0 +1,29 @@
+<div>
+  <h1>Birbs</h1>
+
+  <%= render "shared/flash" %>
+
+  <% if policy(Birb).create? %>
+    <p><%= link_to "Post a birb", new_birb_path %></p>
+  <% end %>
+
+  <% if @birbs.empty? %>
+    <p>No birbs yet.</p>
+  <% else %>
+    <ul>
+      <% @birbs.each do |birb| %>
+        <li>
+          <%= link_to birb_path(birb) do %>
+            <% if birb.photo.attached? %>
+              <%= image_tag birb.photo, alt: birb.caption, width: 240 %>
+            <% end %>
+            <%= birb.caption %>
+          <% end %>
+          <%= @guessed_birb_ids.include?(birb.id) ? "(guessed)" : "(not guessed yet)" %>
+        </li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <p><%= link_to "Back", root_path %></p>
+</div>

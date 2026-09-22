@@ -13,7 +13,7 @@ Three commits, all on `main`:
 
 ## What exists
 
-Rails 8.1.3.1, PostgreSQL 17 (Docker), Tailwind + importmap, Minitest. 44 tests
+Rails 8.1.3.1, PostgreSQL 17 (Docker), Dart Sass + importmap, Minitest. 44 tests
 passing, rubocop clean, `zeitwerk:check` clean.
 
 | Gem | Where it lives |

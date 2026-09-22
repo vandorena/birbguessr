@@ -1,0 +1,9 @@
+cardinal:
+  caption: A cardinal on the Green
+  user: admin
+  created_at: <%= 1.hour.ago.to_fs(:db) %>
+
+goose:
+  caption: A goose outside the Ratty
+  user: admin
+  created_at: <%= 1.day.ago.to_fs(:db) %>

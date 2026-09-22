@@ -1,25 +1,23 @@
-<div class="mx-auto max-w-sm px-4 py-16">
-  <h1 class="text-2xl font-bold">Check your email</h1>
-  <p class="mt-2 text-sm text-gray-600">
+<div>
+  <h1>Check your email</h1>
+  <p>
     We sent you a sign-in link and a six-digit code. Click the link, or type the code
     here. Both expire in <%= LoginCode::EXPIRATION.inspect %>.
   </p>
 
   <%= render "shared/flash" %>
 
-  <%= form_with url: complete_login_path, class: "mt-6 space-y-4" do |form| %>
+  <%= form_with url: complete_login_path do |form| %>
     <div>
-      <%= form.label :code, "Sign-in code", class: "block text-sm font-medium" %>
+      <%= form.label :code, "Sign-in code" %>
       <%= form.text_field :code, required: true, autofocus: true,
-            autocomplete: "one-time-code", inputmode: "numeric", placeholder: "123-456",
-            class: "mt-1 w-full rounded border border-gray-300 px-3 py-2 font-mono tracking-widest" %>
+            autocomplete: "one-time-code", inputmode: "numeric", placeholder: "123-456" %>
     </div>
 
-    <%= form.submit "Sign in",
-          class: "w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" %>
+    <%= form.submit "Sign in" %>
   <% end %>
 
-  <p class="mt-6 text-sm">
-    <%= link_to "Use a different email address", new_login_path, class: "text-blue-600 underline" %>
+  <p>
+    <%= link_to "Use a different email address", new_login_path %>
   </p>
 </div>

@@ -1,0 +1,36 @@
+<div>
+  <h1>Admin</h1>
+
+  <ul>
+    <li><%= link_to "Feature flags", flipper_path %></li>
+    <li><%= link_to "Blazer", blazer_path %></li>
+  </ul>
+
+  <h2>Users (<%= @users.size %>)</h2>
+
+  <table>
+    <thead>
+      <tr>
+        <th>Email</th>
+        <th>Role</th>
+        <th>Joined</th>
+      </tr>
+    </thead>
+    <tbody>
+      <% @users.each do |user| %>
+        <tr>
+          <td><%= user.email_address %></td>
+          <td><%= user.admin? ? "admin" : "member" %></td>
+          <td><%= user.created_at.to_date %></td>
+        </tr>
+      <% end %>
+    </tbody>
+  </table>
+
+  <p>
+    Roles are granted from the command line:
+    <code>bin/rails 'admin:grant[you@brown.edu]'</code>
+  </p>
+
+  <p><%= link_to "Back", root_path %></p>
+</div>

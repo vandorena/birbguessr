@@ -1,0 +1,6 @@
+// Design tokens: custom properties on :root, and nothing else.
+//
+// Plain CSS custom properties rather than Sass variables, so they can be read
+// and overridden at runtime (media queries, a theme class on <body>).
+//
+// Empty for now. Colours, type scale and spacing go here as they are decided.

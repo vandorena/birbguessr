@@ -1,0 +1,7 @@
+// Functional, not decorative. Leaflet measures its container to work out how
+// many tiles to fetch and where to put them, so a map in a height-less div
+// draws nothing at all. This is the one rule the game cannot do without.
+.birb-map__canvas {
+  height: 60vh;
+  min-height: 20rem;
+}

@@ -9,6 +9,8 @@ class User < ApplicationRecord
 
   has_many :sessions, dependent: :destroy
   has_many :login_codes, dependent: :destroy
+  has_many :birbs, dependent: :destroy
+  has_many :guesses, dependent: :destroy
 
   # Downcasing is security-relevant rather than cosmetic: without it
   # "Someone@Brown.edu" slips past the unique index as a second account.

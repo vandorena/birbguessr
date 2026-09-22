@@ -1,0 +1,6 @@
+// Block-agnostic helpers -- rules that belong to no single BEM block.
+//
+// Keep this small. A helper earns its place here only when several unrelated
+// blocks need it; anything used by one block belongs in that block's partial.
+//
+// Empty for now.

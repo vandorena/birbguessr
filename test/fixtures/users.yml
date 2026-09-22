@@ -5,3 +5,10 @@ admin:
 member:
   email_address: member@brown.edu
   admin: false
+
+# A second ordinary player. The reveal rule needs one person who has guessed on
+# a birb and a different person who has not, so that the leak test has someone
+# to be refused.
+other_member:
+  email_address: other@brown.edu
+  admin: false

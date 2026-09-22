@@ -1,0 +1,34 @@
+<div>
+  <h1><%= @birb.caption %></h1>
+
+  <%= render "shared/flash" %>
+
+  <% if @birb.photo.attached? %>
+    <%= image_tag @birb.photo, alt: @birb.caption, width: 640 %>
+  <% end %>
+
+  <% if @reveal.revealed? %>
+    <h2>Where everyone guessed</h2>
+    <p><%= pluralize(@pins.size, "guess") %> on this birb.</p>
+
+    <%= render "map", birb: @birb, editable: false, pins: @pins,
+          aria_label: "Map of Brown's campus showing #{pluralize(@pins.size, 'guess')}" %>
+
+    <%# A text account of the same pins, so the page says something without
+        JavaScript and to a screen reader. %>
+    <ul>
+      <% @pins.each do |pin| %>
+        <li><%= number_with_precision pin[:lat], precision: 6 %>,
+            <%= number_with_precision pin[:lng], precision: 6 %><%= " (yours)" if pin[:mine] %></li>
+      <% end %>
+    </ul>
+  <% else %>
+    <h2>Where do you think this birb is?</h2>
+    <p>Somewhere on Brown's campus. You get one guess, and it is final.</p>
+
+    <%= render "map", birb: @birb, editable: true, pins: [],
+          aria_label: "Map of Brown's campus. Click to place your guess." %>
+  <% end %>
+
+  <p><%= link_to "Back to the gallery", birbs_path %></p>
+</div>

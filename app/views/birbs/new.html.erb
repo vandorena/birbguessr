@@ -1,0 +1,27 @@
+<div>
+  <h1>Post a birb</h1>
+
+  <% if @birb.errors.any? %>
+    <ul>
+      <% @birb.errors.full_messages.each do |message| %>
+        <li><%= message %></li>
+      <% end %>
+    </ul>
+  <% end %>
+
+  <%= form_with model: @birb do |form| %>
+    <div>
+      <%= form.label :caption, "Caption" %>
+      <%= form.text_field :caption, required: true %>
+    </div>
+
+    <div>
+      <%= form.label :photo, "Photo" %>
+      <%= form.file_field :photo, required: true, accept: Birb::CONTENT_TYPES.join(",") %>
+    </div>
+
+    <%= form.submit "Post" %>
+  <% end %>
+
+  <p><%= link_to "Back", birbs_path %></p>
+</div>

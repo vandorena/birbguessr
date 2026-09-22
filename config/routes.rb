@@ -5,6 +5,17 @@ Rails.application.routes.draw do
     mount Blazer::Engine => "/blazer"
   end
 
+  # The admin dashboard itself is a normal controller, gated by AdminPolicy
+  # rather than the routing constraint above -- the constraint exists because
+  # mounted engines run outside the controller stack.
+  get "admin" => "admin#index", as: :admin
+
+  # The game. A birb is a photo; a guess is one pin on it, and you get one.
+  # `resource :guess`, singular, because a player has at most one per birb.
+  resources :birbs, only: %i[ index show new create ] do
+    resource :guess, only: :create
+  end
+
   # Passwordless sign-in. Requesting a code also creates the account, so this is
   # both the sign-up and the sign-in flow.
   get    "login"          => "logins#new",      as: :new_login

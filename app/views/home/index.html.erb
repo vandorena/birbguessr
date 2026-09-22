@@ -1,17 +1,17 @@
-<div class="mx-auto max-w-2xl px-4 py-16">
-  <h1 class="text-3xl font-bold">birbguessr</h1>
-  <p class="mt-2 text-gray-600">The app is up and connected to the database.</p>
+<div>
+  <h1>birbguessr</h1>
+  <p>The app is up and connected to the database.</p>
 
-  <ul class="mt-8 space-y-2">
+  <ul>
+    <li><%= link_to "Birbs", birbs_path %></li>
     <% if authenticated? %>
-      <li>Signed in as <span class="font-medium"><%= Current.user.email_address %></span></li>
+      <li>Signed in as <span><%= Current.user.email_address %></span></li>
       <% if Current.user.admin? %>
-        <li><%= link_to "Feature flags", flipper_path, class: "text-blue-600 underline" %></li>
-        <li><%= link_to "Blazer", blazer_path, class: "text-blue-600 underline" %></li>
+        <li><%= link_to "Admin", admin_path %></li>
       <% end %>
-      <li><%= button_to "Sign out", logout_path, method: :delete, class: "text-blue-600 underline" %></li>
+      <li><%= button_to "Sign out", logout_path, method: :delete %></li>
     <% else %>
-      <li><%= link_to "Sign in", new_login_path, class: "text-blue-600 underline" %></li>
+      <li><%= link_to "Sign in", new_login_path %></li>
     <% end %>
   </ul>
 </div>

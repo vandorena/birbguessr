@@ -1,21 +1,19 @@
-<div class="mx-auto max-w-sm px-4 py-16">
-  <h1 class="text-2xl font-bold">Sign in to birbguessr</h1>
-  <p class="mt-2 text-sm text-gray-600">
+<div>
+  <h1>Sign in to birbguessr</h1>
+  <p>
     Brown addresses only. We'll email you a link and a code — either one signs you in.
     If you don't have an account yet, this creates one.
   </p>
 
   <%= render "shared/flash" %>
 
-  <%= form_with url: login_path, scope: :login, class: "mt-6 space-y-4" do |form| %>
+  <%= form_with url: login_path, scope: :login do |form| %>
     <div>
-      <%= form.label :email_address, "Email address", class: "block text-sm font-medium" %>
+      <%= form.label :email_address, "Email address" %>
       <%= form.email_field :email_address, required: true, autofocus: true,
-            autocomplete: "email", placeholder: "you@brown.edu",
-            class: "mt-1 w-full rounded border border-gray-300 px-3 py-2" %>
+            autocomplete: "email", placeholder: "you@brown.edu" %>
     </div>
 
-    <%= form.submit "Email me a sign-in link",
-          class: "w-full rounded bg-blue-600 px-4 py-2 font-medium text-white hover:bg-blue-700" %>
+    <%= form.submit "Email me a sign-in link" %>
   <% end %>
 </div>

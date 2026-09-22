@@ -1,0 +1,18 @@
+// Entrypoint for Dart Sass. Compiled to app/assets/builds/application.css,
+// which Propshaft then digests and serves.
+//
+// Styles follow BEM: .block, .block__element, .block--modifier.
+// Add partials as app/assets/stylesheets/_name.scss and @use them here.
+//
+// Nothing is styled yet. The views carry no classes beyond the page hook on
+// <body>, so every page renders as browser-default HTML until rules are
+// written here by hand. That is deliberate -- this app had Tailwind, and the
+// utilities were removed rather than translated.
+
+// Leaflet, for the campus map. Vendored -- see the note at the top of the
+// partial. It comes first so our own rules can override it.
+@use "leaflet";
+
+@use "tokens";
+@use "utilities";
+@use "birb-map";

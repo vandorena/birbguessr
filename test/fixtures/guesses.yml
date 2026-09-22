@@ -1,0 +1,15 @@
+# The coordinates carry deliberately distinctive six-decimal tails. Tests assert
+# on the tail alone ("827111"), which is immune to whether the value reached the
+# page as 41.827111, "41.827111" or BigDecimal's 0.41827111e2 -- and no tail is a
+# prefix of another, or of Campus::CENTRE.
+member_on_cardinal:
+  birb: cardinal
+  user: member
+  latitude: 41.827111
+  longitude: -71.402999
+
+admin_on_cardinal:
+  birb: cardinal
+  user: admin
+  latitude: 41.828222
+  longitude: -71.401888
