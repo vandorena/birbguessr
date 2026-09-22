@@ -1,5 +1,19 @@
 # syntax=docker/dockerfile:1
-# check=error=true
+# check=error=true;skip=SecretsUsedInArgOrEnv
+#
+# skip=SecretsUsedInArgOrEnv: Coolify rewrites this file before building it,
+# inserting an `ARG <NAME>` after every FROM for each environment variable it is
+# told to expose at build time. Secret-shaped names among them trip
+# SecretsUsedInArgOrEnv, and `check=error=true` turns that warning into a failed
+# build. Nothing in this file declares such an ARG itself.
+#
+# The skip only stops the build failing -- it does not make the practice safe.
+# ARG values are recorded in the image's metadata and readable with
+# `docker history`, so keep DATABASE_PASSWORD, SMTP_PASSWORD and anything like
+# them *off* at build time in Coolify. Nothing below needs them: the build runs
+# bundle install, bootsnap precompile, and assets:precompile with
+# SECRET_KEY_BASE_DUMMY=1, none of which opens a database connection or sends
+# mail. They are runtime configuration only.
 
 # This Dockerfile is designed for production, not development. Use with Kamal or build'n'run by hand:
 # docker build -t birbguessr .
