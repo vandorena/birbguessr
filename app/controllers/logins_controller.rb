@@ -3,15 +3,36 @@ class LoginsController < ApplicationController
 
   allow_unauthenticated_access
 
+  # Every limit below is named. Rails keys a limit on [scope, name, by], and the
+  # scope defaults to the controller path -- so two IP-keyed limits in this one
+  # controller would otherwise share a bucket and spend each other's budget.
+
   # Six digits is ~20 bits, so throttling is load-bearing, not decoration.
-  rate_limit to: 5, within: 15.minutes, only: :create,
-             by: -> { params.dig(:login, :email_address).to_s.downcase.strip.presence || request.remote_ip },
+  #
+  # Keyed by the *mailbox*, not the address as typed: without canonicalising,
+  # you+1@ and you+2@ are separate buckets that land in the same inbox, and the
+  # limit is five emails per alias rather than five per person.
+  rate_limit to: 5, within: 15.minutes, only: :create, name: "login-email",
+             by: -> { User.canonical_address(params.dig(:login, :email_address)).presence || request.remote_ip },
              with: -> { redirect_to new_login_path, alert: "Too many sign-in attempts. Try again in a few minutes." }
+
+  # The per-address limit above caps what one mailbox receives; it does nothing
+  # about one machine requesting codes for a thousand different addresses, which
+  # is the mail-bomb and the enumeration sweep. This is that cap.
+  #
+  # An hour rather than fifteen minutes, because the cost being limited is
+  # outbound mail and a sender reputation, both of which are hourly problems.
+  # Thirty is chosen against a shared campus NAT, where a whole dorm signing in
+  # after a launch arrives from one address -- turn it up if real traffic trips
+  # it, since the failure here is a locked-out building, not a leak.
+  rate_limit to: 30, within: 1.hour, only: :create, name: "login-ip",
+             by: -> { request.remote_ip },
+             with: -> { redirect_to new_login_path, alert: "Too many sign-in attempts from this network. Try again later." }
 
   # Deliberately above LoginCode::MAX_ATTEMPTS so the per-row counter is what
   # burns a single guessed code; this is the backstop for one IP working through
   # many codes, and is loose enough to survive a shared NAT.
-  rate_limit to: 20, within: 15.minutes, only: %i[ complete show ],
+  rate_limit to: 20, within: 15.minutes, only: %i[ complete show ], name: "code-attempts",
              by: -> { request.remote_ip },
              with: -> { redirect_to new_login_path, alert: "Too many sign-in attempts. Try again in a few minutes." }
 

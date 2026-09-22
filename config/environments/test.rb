@@ -20,7 +20,11 @@ Rails.application.configure do
 
   # Show full error reports.
   config.consider_all_requests_local = true
-  config.cache_store = :null_store
+  # A real store, not :null_store. rate_limit counts through the cache, and
+  # against a null store every limit in the app silently never trips -- which
+  # means the throttles on LoginsController would be untestable, and any break
+  # in them would pass the suite. test_helper clears it between tests.
+  config.cache_store = :memory_store
 
   # Render exception templates for rescuable exceptions and raise for other exceptions.
   config.action_dispatch.show_exceptions = :rescuable

@@ -1,0 +1,19 @@
+// The wordmark face, and nothing else -- body text is the system stack.
+//
+// The file is named .ttf but its sfnt tag is OTTO, which means CFF outlines,
+// which means OpenType. format("truetype") would be a lie, and a browser that
+// believes the hint and then finds a CFF table is entitled to discard the
+// whole face. The filename is left as it was given.
+//
+// Propshaft rewrites this url() to the digested path when it serves the built
+// stylesheet, so the bare logical name is what belongs here -- the same way
+// the vendored Leaflet partial refers to leaflet/layers.png.
+@font-face {
+  font-family: "BlueBird";
+  src: url("bluebird.regular.ttf") format("opentype");
+  font-weight: 400;
+  font-style: normal;
+  // The wordmark is one word at 57px. Showing it in the fallback for a moment
+  // beats showing a hole where the name of the site goes.
+  font-display: swap;
+}

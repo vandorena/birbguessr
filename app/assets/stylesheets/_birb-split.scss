@@ -1,0 +1,294 @@
+// The birb show page: the photo on the left, the campus map on the right, and
+// a slider sitting on the seam between them.
+//
+// The one rule the whole block turns on: moving the slider must not resize
+// anything. Both layers are laid out once and never measured again --
+//
+//   * the photo is a fixed box the width of the slider's *starting* position,
+//     so it keeps its framing whether it is covered or not;
+//   * the map fills the entire viewport and is *clipped* to the right of the
+//     seam, so dragging left uncovers map that was always drawn.
+//
+// That matters more for the map than for the photo: Leaflet works out which
+// tiles to fetch from its container's size, so animating a width would restart
+// the tile maths on every frame. A clip-path costs the compositor nothing and
+// Leaflet never learns it happened.
+//
+// --birb-split is the seam, and the only thing the slider writes. It starts
+// at, and can never exceed, --birb-split-start -- so the slider moves left off
+// its opening position and back, never past it.
+.birb-split {
+  --birb-split-start: 48.75%; // 624 / 1280, off the design
+  --birb-split: var(--birb-split-start);
+  --birb-split-handle: 23px;
+
+  position: fixed;
+  inset: 0;
+  // Opaque over the ruled sheet: the show page is one screen, edge to edge.
+  background-color: var(--colour-pink);
+  overflow: hidden;
+}
+
+// Fixed at the slider's opening width. The slider covers this box; it never
+// resizes it, so the birb stays framed exactly as it was posted.
+.birb-split__photo {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 0;
+  width: var(--birb-split-start);
+  z-index: 1;
+}
+
+.birb-split__photo-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Full viewport, deliberately. The map is drawn edge to edge and then clipped
+// back to the seam, which is what lets the slider uncover more of it without a
+// single Leaflet resize.
+.birb-split__map {
+  position: absolute;
+  inset: 0;
+  z-index: 2;
+}
+
+.birb-split .birb-map {
+  position: absolute;
+  inset: 0;
+}
+
+// The clip lives on the Leaflet container itself rather than on a wrapper, so
+// that the guess controls -- siblings inside the same Stimulus element -- stay
+// outside it and cannot be clipped away.
+//
+// clip-path clips hit-testing as well as paint, so the covered strip of map
+// stops taking clicks the moment it goes under the photo.
+.birb-split .birb-map__canvas {
+  position: absolute;
+  inset: 0;
+  height: 100%;
+  min-height: 0;
+  clip-path: inset(0 0 0 var(--birb-split));
+}
+
+// The slider. Straddles the seam and overlaps the map, as drawn.
+//
+// The full-height bar and the grip are separate elements rather than the one
+// SVG the design exports: that file is 832px tall, and a browser window is
+// whatever height it is. A bar stretches cleanly, a 45px rounded grip does not.
+.birb-split__slider {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: calc(var(--birb-split) - (var(--birb-split-handle) / 2));
+  width: var(--birb-split-handle);
+  z-index: 3;
+  border: 0;
+  padding: 0;
+  background: none;
+  cursor: ew-resize;
+  touch-action: none; // pointermove drives the drag; let it, not the scroller
+}
+
+// 11px of pink, inset 6px into the 23px track -- the seam itself.
+.birb-split__slider-bar {
+  position: absolute;
+  top: 0;
+  bottom: 0;
+  left: 6px;
+  width: 11px;
+  background-color: var(--colour-pink);
+}
+
+.birb-split__slider-grip {
+  position: absolute;
+  top: 50%;
+  left: 0;
+  width: var(--birb-split-handle);
+  height: 45px;
+  margin-top: -22.5px;
+  border-radius: var(--radius-control);
+  background-color: var(--colour-pink-deep);
+  transition: transform 120ms ease, background-color 120ms ease;
+}
+
+// The two notches on the grip, at x=7 and x=16 of the 23px track.
+.birb-split__slider-grip::before,
+.birb-split__slider-grip::after {
+  content: "";
+  position: absolute;
+  top: 7px;
+  width: 2px;
+  height: 31px;
+  background-color: var(--colour-pink);
+}
+
+.birb-split__slider-grip::before { left: 6px; }
+.birb-split__slider-grip::after { left: 15px; }
+
+// The grip presses in when you take hold of it.
+//
+// Scoped to the grip, never the handle: the bar runs the full height of the
+// window and *is* the seam, so scaling it would pull it off the edge the map
+// is clipped to and open a gap down the middle of the page.
+//
+// It stays pressed for the whole drag rather than flicking back, because
+// startDrag captures the pointer -- so :active holds even once the pointer has
+// outrun a 23px handle, which it does immediately.
+.birb-split__slider:active .birb-split__slider-grip {
+  transform: scale(0.92);
+}
+
+// No ring. A button gets one from the browser by default, so this has to say
+// so explicitly rather than simply not asking for one.
+//
+// Something has to stand in, though -- the slider is reachable by keyboard and
+// arrow-driven, and with no indicator at all there is no way to tell it is the
+// thing the arrow keys are about to move. The grip deepens instead, which is
+// the affordance without the outline.
+.birb-split__slider:focus-visible {
+  outline: none;
+}
+
+.birb-split__slider:focus-visible .birb-split__slider-grip {
+  background-color: var(--colour-pink-deep-hover);
+}
+
+// The two chrome buttons. One is the home icon from the design, top right; the
+// other is the guess submit, bottom right, wearing the same shape and the same
+// two pinks -- which is why every state below is written once for both.
+.birb-split__home,
+.birb-split__button {
+  position: absolute;
+  right: var(--space-edge);
+  z-index: 4;
+  height: 45px;
+  border: 0;
+  border-radius: var(--radius-control);
+  background-color: var(--colour-pink);
+  transition: transform 120ms ease, filter 120ms ease,
+              background-color 120ms ease, color 120ms ease;
+}
+
+.birb-split__home {
+  top: var(--space-edge);
+  display: block;
+  width: 45px;
+}
+
+.birb-split__button {
+  // Lifted off the edge inset the home button uses. The home button is tucked
+  // into its corner; this one is a target you aim for, and the extra few
+  // pixels keep it clear of the window edge and of Leaflet's attribution
+  // strip, which sits along the bottom of the map.
+  bottom: calc(var(--space-edge) + 12px);
+  padding: 0 1.25rem;
+  // Not --colour-pink-deep, which is what the home icon is drawn in: the same
+  // pink behind a word instead of a stroke is 1.27:1 and unreadable.
+  color: var(--colour-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+}
+
+// The SVG is inlined into the page, so its shapes are ordinary elements and
+// these rules reach them. `fill` and `stroke` as CSS properties beat the
+// fill="" and stroke="" attributes in the file, which are presentation
+// attributes and lose to every rule.
+//
+// The home button's own background is that rect, not the element behind it,
+// so the shared background-color above is only what keeps the two buttons the
+// same colour while the SVG loads.
+.birb-split__home svg rect { fill: var(--colour-pink); }
+.birb-split__home svg path { stroke: var(--colour-pink-deep); }
+
+.birb-split__home svg rect,
+.birb-split__home svg path {
+  transition: fill 120ms ease, stroke 120ms ease;
+}
+
+// The home button has no label to mark, so it grows and deepens instead. The
+// guess button has one, and the underline is the whole of its hover state --
+// nothing moves, nothing changes colour, nothing lifts.
+.birb-split__home:hover {
+  transform: scale(1.08);
+  // Matched to the button's own radius so the shadow reads as the shape
+  // lifting off the pink ground rather than a rectangle behind it.
+  filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.25));
+}
+
+.birb-split__button:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.birb-split__home:hover svg rect { fill: var(--colour-pink-hover); }
+.birb-split__home:hover svg path { stroke: var(--colour-pink-deep-hover); }
+
+// Past its resting size, so the press is felt against the hover rather than
+// against nothing -- on a touch screen :hover sticks after the tap, and a
+// press that only returned to 1 would look like the button had not moved.
+.birb-split__home:active,
+.birb-split__button:active:not(:disabled) {
+  transform: scale(0.94);
+  filter: none;
+}
+
+.birb-split__home:focus-visible,
+.birb-split__button:focus-visible {
+  outline: 3px solid var(--colour-pink-deep);
+  outline-offset: 2px;
+}
+
+// No pin placed yet. Sits still and takes nothing, but stays in the corner
+// rather than appearing on the first click -- the corner is where you look for
+// it, and a control that materialises is a control you have to find.
+//
+// Drawn with a paler ground rather than turned down with opacity: the button
+// is opaque in every state, so the map never shows through it.
+.birb-split__button:disabled {
+  background-color: var(--colour-pink-mute);
+  cursor: not-allowed;
+}
+
+// A button that jumps is a button that hurts, for some people literally. The
+// colours still respond; only the movement stops.
+@media (prefers-reduced-motion: reduce) {
+  .birb-split__home,
+  .birb-split__button,
+  .birb-split__slider-grip {
+    transition: none;
+  }
+
+  .birb-split__home:hover,
+  .birb-split__home:active,
+  .birb-split__button:active,
+  .birb-split__slider:active .birb-split__slider-grip {
+    transform: none;
+  }
+}
+
+// Under ~700px the two panes stop being a split and become a stack: a seam you
+// drag sideways is meaningless when neither side is wide enough to read.
+@media (max-width: 43.75rem) {
+  .birb-split {
+    --birb-split-start: 0%;
+  }
+
+  .birb-split__photo {
+    width: 100%;
+    height: 45%;
+    bottom: auto;
+  }
+
+  .birb-split__map {
+    top: 45%;
+  }
+
+  .birb-split__slider {
+    display: none;
+  }
+}

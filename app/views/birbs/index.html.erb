@@ -1,29 +1,54 @@
-<div>
-  <h1>Birbs</h1>
+<%= render "shared/flash" %>
 
-  <%= render "shared/flash" %>
+<div class="birb-index">
+  <header class="birb-index__header">
+    <%# Signed-out visitors get nothing here: for them the way in is clicking a
+        birb, which the authentication concern turns into a sign-in and then
+        returns them to that birb. %>
+    <% if authenticated? %>
+      <div class="birb-index__session">
+        Signed in
+        <%= button_to "Sign out", logout_path, method: :delete,
+              class: "birb-index__signout" %>
+      </div>
+    <% end %>
 
-  <% if policy(Birb).create? %>
-    <p><%= link_to "Post a birb", new_birb_path %></p>
-  <% end %>
+    <h1 class="birb-index__wordmark">
+      <%# Decorative: the word beside it already names the site. %>
+      <%= image_tag "birbs/birb-mark.png", alt: "", class: "birb-index__mark" %>
+      Birbguessr
+    </h1>
+
+    <%# Not in the frame, and the only way to reach the posting form -- there is
+        no other link to it anywhere in the app. %>
+    <% if policy(Birb).create? %>
+      <%= link_to "Post a birb", new_birb_path, class: "birb-index__post" %>
+    <% end %>
+  </header>
 
   <% if @birbs.empty? %>
-    <p>No birbs yet.</p>
+    <p class="birb-index__empty">No birbs yet.</p>
   <% else %>
-    <ul>
+    <ul class="birb-index__list">
       <% @birbs.each do |birb| %>
         <li>
-          <%= link_to birb_path(birb) do %>
+          <%= link_to birb_path(birb), class: "birb-index__link" do %>
             <% if birb.photo.attached? %>
-              <%= image_tag birb.photo, alt: birb.caption, width: 240 %>
+              <%= image_tag birb.photo, alt: "", class: "birb-index__photo" %>
             <% end %>
-            <%= birb.caption %>
+
+            <span class="birb-index__date"><%= l birb.created_at.to_date, format: :birb %></span>
+            <span class="birb-index__title"><%= birb.caption %></span>
+
+            <%# The design draws no guessed/unguessed state, but the page still
+                has to say which is which to anyone not looking at it -- and it
+                is the one thing that changes what clicking the card will do. %>
+            <span class="u-visually-hidden">
+              <%= @guessed_birb_ids.include?(birb.id) ? "Guessed" : "Not guessed yet" %>
+            </span>
           <% end %>
-          <%= @guessed_birb_ids.include?(birb.id) ? "(guessed)" : "(not guessed yet)" %>
         </li>
       <% end %>
     </ul>
   <% end %>
-
-  <p><%= link_to "Back", root_path %></p>
 </div>

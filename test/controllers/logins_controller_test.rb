@@ -155,7 +155,10 @@ class LoginsControllerTest < ActionDispatch::IntegrationTest
     delete logout_path
     get root_path
 
-    assert_match "Sign in", response.body
+    # The landing page renders either way -- what tells you the session is gone
+    # is that it has stopped saying who you are.
+    assert_response :success
+    assert_no_match "Signed in", response.body
   end
 
   test "protected pages redirect to login" do
@@ -163,5 +166,51 @@ class LoginsControllerTest < ActionDispatch::IntegrationTest
 
     # AdminConstraint makes the route invisible rather than redirecting.
     assert_response :not_found
+  end
+
+  # Throttling
+  #
+  # These pass only because the test environment uses a real cache store;
+  # rate_limit counts through the cache, and against :null_store none of them
+  # would ever trip.
+
+  test "one mailbox gets five emails per quarter hour, aliases included" do
+    5.times { |i| post login_path, params: { login: { email_address: "flood+#{i}@brown.edu" } } }
+    assert_equal 5, ActionMailer::Base.deliveries.size
+
+    # The sixth is the same mailbox under a sixth alias, and it is refused.
+    post login_path, params: { login: { email_address: "flood+again@brown.edu" } }
+
+    assert_redirected_to new_login_path
+    assert_equal 5, ActionMailer::Base.deliveries.size
+  end
+
+  test "one network gets thirty emails an hour across every address" do
+    30.times { |i| post login_path, params: { login: { email_address: "person#{i}@brown.edu" } } }
+    assert_equal 30, ActionMailer::Base.deliveries.size
+
+    # A thirty-first address from the same IP: under its own per-mailbox limit,
+    # over the network's.
+    post login_path, params: { login: { email_address: "person30@brown.edu" } }
+
+    assert_redirected_to new_login_path
+    assert_equal 30, ActionMailer::Base.deliveries.size
+    assert_match "from this network", flash[:alert]
+  end
+
+  # Two IP-keyed limits in one controller share a bucket unless each is given a
+  # name -- Rails keys a limit on [scope, name, by], and the scope is the
+  # controller path for both. Unnamed, the 21 sends below would push the
+  # code-attempt counter past its own limit of 20 and lock a visitor out of
+  # typing their code, having never typed one.
+  test "sending codes does not spend the code-attempt budget" do
+    21.times { |i| post login_path, params: { login: { email_address: "sender#{i}@brown.edu" } } }
+
+    post complete_login_path, params: { code: "000000" }
+
+    # Refused for being the wrong code, which is the honest answer -- not for
+    # having attempted too many, which is what a shared bucket would have said.
+    assert_match "not valid", flash[:alert]
+    assert_no_match(/Too many/, flash[:alert])
   end
 end

@@ -39,8 +39,6 @@ export default class extends Controller {
     this.map = map(this.canvasTarget, {
       // Scrolling past a map should scroll the page, not zoom the map.
       scrollWheelZoom: false,
-      maxBounds: this.boundsValue,
-      maxBoundsViscosity: 1.0,
       // One canvas instead of an SVG path per building. Brown is 279 polygons,
       // and as separate DOM nodes that is what makes panning stutter. Leaflet
       // hit-tests canvas layers itself, so tooltips and clicks still work.
@@ -53,6 +51,12 @@ export default class extends Controller {
       maxZoom: 19
     }).addTo(this.map)
 
+    // Frames campus, and that is all it does. There is deliberately no
+    // maxBounds: a fence with maxBoundsViscosity: 1.0 does not stop a pan, it
+    // lets one happen and then yanks the view back the moment you let go,
+    // which reads as the map fighting you. Panning is now free, and where a
+    // guess may land is Guess#must_be_on_campus's business -- it always was,
+    // since a hand-rolled POST never saw the fence anyway.
     this.map.fitBounds(this.boundsValue)
 
     this.pinsValue.forEach(pin => {

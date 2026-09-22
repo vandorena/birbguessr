@@ -1,34 +1,67 @@
-<div>
-  <h1><%= @birb.caption %></h1>
+<%# The split view from the design: birb on the left, campus on the right, and
+    a slider on the seam that only ever covers the photo -- never resizes it.
+    Everything the page has to say without sight or JavaScript is here too,
+    carrying .u-visually-hidden, because the design has no room drawn for it. %>
+<div class="birb-split" data-controller="birb-split">
+  <h1 class="u-visually-hidden"><%= @birb.caption %></h1>
+
+  <div class="birb-split__photo">
+    <% if @birb.photo.attached? %>
+      <%= image_tag @birb.photo, alt: @birb.caption, class: "birb-split__photo-image" %>
+    <% end %>
+  </div>
+
+  <div class="birb-split__map">
+    <% if @reveal.revealed? %>
+      <h2 class="u-visually-hidden">Where everyone guessed</h2>
+      <p class="u-visually-hidden"><%= pluralize(@pins.size, "guess") %> on this birb.</p>
+
+      <%= render "map", birb: @birb, editable: false, pins: @pins,
+            aria_label: "Map of Brown's campus showing #{pluralize(@pins.size, 'guess')}" %>
+
+      <%# A text account of the same pins, so the page says something without
+          JavaScript and to a screen reader. %>
+      <ul class="u-visually-hidden">
+        <% @pins.each do |pin| %>
+          <li><%= number_with_precision pin[:lat], precision: 6 %>,
+              <%= number_with_precision pin[:lng], precision: 6 %><%= " (yours)" if pin[:mine] %></li>
+        <% end %>
+      </ul>
+    <% else %>
+      <h2 class="u-visually-hidden">Where do you think this birb is?</h2>
+      <p class="u-visually-hidden">Somewhere on Brown's campus. You get one guess, and it is final.</p>
+
+      <%= render "map", birb: @birb, editable: true, pins: [],
+            aria_label: "Map of Brown's campus. Click to place your guess." %>
+    <% end %>
+  </div>
+
+  <%# role="slider" rather than a bare div: it is one value on one axis, and
+      that is the role screen readers already know how to announce. The number
+      it reports is how much of the photo is still showing. %>
+  <button type="button"
+          class="birb-split__slider"
+          data-birb-split-target="slider"
+          data-action="pointerdown->birb-split#startDrag
+                       pointermove->birb-split#drag
+                       pointerup->birb-split#endDrag
+                       pointercancel->birb-split#endDrag
+                       keydown->birb-split#nudge"
+          role="slider"
+          aria-label="Slide left to cover the photo with the map"
+          aria-orientation="horizontal"
+          aria-valuemin="0"
+          aria-valuemax="100"
+          aria-valuenow="100">
+    <span class="birb-split__slider-bar"></span>
+    <span class="birb-split__slider-grip"></span>
+  </button>
+
+  <%# Inlined rather than image_tag'd, so that the hover state can darken the
+      rect behind the house -- see ApplicationHelper#inline_svg. %>
+  <%= link_to birbs_path, class: "birb-split__home", aria: { label: "Back to the gallery" } do %>
+    <%= inline_svg "birbs/home-button.svg" %>
+  <% end %>
 
   <%= render "shared/flash" %>
-
-  <% if @birb.photo.attached? %>
-    <%= image_tag @birb.photo, alt: @birb.caption, width: 640 %>
-  <% end %>
-
-  <% if @reveal.revealed? %>
-    <h2>Where everyone guessed</h2>
-    <p><%= pluralize(@pins.size, "guess") %> on this birb.</p>
-
-    <%= render "map", birb: @birb, editable: false, pins: @pins,
-          aria_label: "Map of Brown's campus showing #{pluralize(@pins.size, 'guess')}" %>
-
-    <%# A text account of the same pins, so the page says something without
-        JavaScript and to a screen reader. %>
-    <ul>
-      <% @pins.each do |pin| %>
-        <li><%= number_with_precision pin[:lat], precision: 6 %>,
-            <%= number_with_precision pin[:lng], precision: 6 %><%= " (yours)" if pin[:mine] %></li>
-      <% end %>
-    </ul>
-  <% else %>
-    <h2>Where do you think this birb is?</h2>
-    <p>Somewhere on Brown's campus. You get one guess, and it is final.</p>
-
-    <%= render "map", birb: @birb, editable: true, pins: [],
-          aria_label: "Map of Brown's campus. Click to place your guess." %>
-  <% end %>
-
-  <p><%= link_to "Back to the gallery", birbs_path %></p>
 </div>

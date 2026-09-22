@@ -1,12 +1,40 @@
 require "test_helper"
 
 class BirbsControllerTest < ActionDispatch::IntegrationTest
-  test "signed-out visitors are sent to sign in" do
+  # The gallery is the landing page, so it has to render to someone who has
+  # never signed in -- that is the whole of what they see before they do.
+  test "the gallery renders signed out" do
     get birbs_path
-    assert_redirected_to new_login_path
 
+    assert_response :success
+    assert_match birbs(:cardinal).caption, response.body
+  end
+
+  test "the gallery is the root path" do
+    get root_path
+
+    assert_response :success
+    assert_match birbs(:cardinal).caption, response.body
+  end
+
+  # Looking is free; opening one is not. This is where a signed-out visitor
+  # meets the sign-in flow.
+  test "opening a birb signed out starts the sign-in flow, and comes back" do
     get birb_path(birbs(:cardinal))
     assert_redirected_to new_login_path
+
+    # And the birb they were opening is what they are returned to once they
+    # have signed in, rather than being dropped on the gallery.
+    assert_equal birb_url(birbs(:cardinal)), session[:return_to_after_authenticating]
+  end
+
+  test "the signed-in pill is only there for someone signed in" do
+    get birbs_path
+    assert_select ".birb-index__session", false
+
+    sign_in_as users(:member)
+    get birbs_path
+    assert_select ".birb-index__session", /Signed in/
   end
 
   test "the gallery lists birbs newest first" do

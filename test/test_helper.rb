@@ -8,7 +8,7 @@ module ActiveSupport
     # Run tests in parallel with specified workers
     # Minitest's parallel runner forks, and this machine cannot fork a process
     # that has opened a libpq connection -- the child segfaults inside
-    # PG.connect. It is the same bug HANDOFF.md records for Solid Queue's
+    # PG.connect. It is the same bug HANDOFF-2026-09-21.md records for Solid Queue's
     # supervisor, and it stayed invisible here only because the suite sat under
     # the 50-test threshold that turns parallelism on. Linux (CI, Docker) is
     # unaffected, so this is scoped to macOS rather than switched off.
@@ -16,6 +16,12 @@ module ActiveSupport
 
     # Setup all fixtures in test/fixtures/*.yml for all tests in alphabetical order.
     fixtures :all
+
+    # The cache is a real store in test so that rate limiting can be exercised
+    # -- which means counters survive from one test to the next unless they are
+    # cleared, and a test that signs in would start out having already spent
+    # somebody else's budget.
+    setup { Rails.cache.clear }
 
     # Add more helper methods to be used by all tests here...
   end

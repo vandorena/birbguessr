@@ -1,0 +1,191 @@
+// The gallery: the wordmark, and a row of birb cards on the ruled sheet.
+.birb-index {
+  min-height: 100vh;
+  padding: 84px clamp(1rem, 5vw, 6rem) 4rem;
+  color: var(--colour-ink);
+}
+
+.birb-index__header {
+  position: relative;
+  // The wordmark sits centred in the window, not centred in what is left over
+  // once the post link has taken its share -- so the link is taken out of the
+  // flow rather than laid beside it.
+  margin-bottom: 51px;
+}
+
+.birb-index__wordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin: 0;
+  font-family: "BlueBird", Georgia, serif;
+  font-size: clamp(2.25rem, 4.5vw, 57px);
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+}
+
+// Sized off the wordmark rather than in pixels, so the two scale together as
+// the heading does. Its own aspect ratio is held by width: auto -- the source
+// is not square, and forcing it to a box would squash the bird.
+.birb-index__mark {
+  width: auto;
+  height: 1.4em;
+}
+
+// Top left, opposite the post link, both hung off the header rather than laid
+// out beside the wordmark -- the wordmark is centred in the window, not in what
+// is left over once these have taken their share.
+.birb-index__session {
+  position: absolute;
+  left: 0;
+  bottom: 0;
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  border-radius: var(--radius-pill);
+  padding: 0 0.75rem;
+  background-color: var(--colour-pink-veil);
+  font-size: 1.125rem;
+  line-height: 2.25rem;
+}
+
+// Sign-out has to live somewhere, and with the old landing page gone this pill
+// is the only chrome a signed-in player sees. Drawn as a link rather than a
+// button: it is a footnote to the pill, not a second control competing with it.
+.birb-index__signout button {
+  border: 0;
+  padding: 0;
+  background: none;
+  color: inherit;
+  font: inherit;
+  font-size: 0.85em;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
+  opacity: 0.75;
+}
+
+.birb-index__signout button:hover {
+  opacity: 1;
+}
+
+.birb-index__post {
+  position: absolute;
+  right: 0;
+  bottom: 0;
+  border-radius: var(--radius-pill);
+  padding: 0 0.75rem;
+  background-color: var(--colour-pink-veil);
+  color: inherit;
+  font-size: 1.125rem;
+  line-height: 2.25rem;
+  text-decoration: none;
+}
+
+.birb-index__post:hover {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+// Fixed 251px columns, as drawn, as many as fit. The gutter is the design's
+// 147px scaled to the window, so three cards sit where three cards were drawn
+// and the row closes up rather than overflowing when the window is narrower.
+.birb-index__list {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, 251px);
+  gap: clamp(1.5rem, 11.5vw, 147px);
+  justify-content: center;
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.birb-index__link {
+  position: relative;
+  display: block;
+  width: 251px;
+  height: 334px;
+  border-radius: var(--radius-card);
+  // A birb without a photo is still a card, and this is what it is made of.
+  background-color: var(--colour-pink-veil);
+  color: inherit;
+  text-decoration: none;
+  overflow: hidden;
+}
+
+.birb-index__photo {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+
+// Both pills are translucent on purpose: over a photograph they are what makes
+// the text readable, and over the bare card they all but disappear into it.
+.birb-index__date,
+.birb-index__title {
+  position: absolute;
+  border-radius: var(--radius-pill);
+  background-color: var(--colour-pink-veil);
+  text-align: center;
+  // A long caption is trimmed rather than allowed to break the pill's height,
+  // which is fixed by the design.
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.birb-index__date {
+  top: 6px;
+  right: 6px;
+  min-width: 113px;
+  max-width: calc(100% - 12px);
+  padding: 0 0.75rem;
+  font-size: 24px;
+  line-height: 29px;
+}
+
+.birb-index__title {
+  left: 30px;
+  right: 30px;
+  bottom: 12px;
+  padding: 0 0.75rem;
+  font-size: 32px;
+  line-height: 49px;
+}
+
+.birb-index__link:hover .birb-index__title {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+.birb-index__link:focus-visible {
+  outline: 3px solid var(--colour-ink);
+  outline-offset: 3px;
+}
+
+.birb-index__empty {
+  margin: 0;
+  font-size: 1.5rem;
+  text-align: center;
+}
+
+// Below the width where an absolutely placed link can miss the wordmark, it
+// goes back into the flow underneath it.
+@media (max-width: 43.75rem) {
+  .birb-index {
+    padding-top: 3rem;
+  }
+
+  .birb-index__session,
+  .birb-index__post {
+    position: static;
+    display: flex;
+    justify-content: center;
+    width: fit-content;
+    margin: 1rem auto 0;
+  }
+}

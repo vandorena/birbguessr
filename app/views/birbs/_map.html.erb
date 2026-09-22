@@ -4,7 +4,8 @@
 
     pins is [] for anyone who has not guessed -- BirbsController never loads
     them, so there is nothing here to hide. %>
-<div data-controller="birb-map"
+<div class="birb-map"
+     data-controller="birb-map"
      data-birb-map-bounds-value="<%= Campus::BOUNDS.to_json %>"
      data-birb-map-tile-url-value="<%= Campus::TILE_URL %>"
      data-birb-map-attribution-value="<%= Campus::TILE_ATTRIBUTION %>"
@@ -20,7 +21,7 @@
   <%# The buildings are drawn to a canvas, which is nothing at all to a screen
       reader, and the map needs JavaScript besides. This is the same campus as
       text. Collapsed, because it is 181 names. %>
-  <details>
+  <details class="u-visually-hidden">
     <summary><%= pluralize(Campus::Buildings.summary.count, "building") %> on campus</summary>
 
     <ul>
@@ -46,14 +47,18 @@
 
       <%# The only non-visual account of where the pin is. A circle drawn on a
           map is nothing at all to a screen reader. %>
-      <p data-birb-map-target="readout" aria-live="polite">No pin yet. Click the map.</p>
+      <p class="u-visually-hidden" data-birb-map-target="readout" aria-live="polite">No pin yet. Click the map.</p>
 
-      <%= form.submit "Lock in my guess", disabled: true,
+      <%# form.button, not form.submit: an <input> has no text node in it, and
+          text-decoration on one is ignored outright by some browsers -- the
+          hover underline would simply not appear. name: nil drops the
+          name="button" Rails would otherwise send along with the guess. %>
+      <%= form.button "Guess!", name: nil, disabled: true, class: "birb-split__button",
             data: { birb_map_target: "submit" } %>
     <% end %>
 
     <noscript>
-      <p>The map needs JavaScript. Without it you cannot place a guess.</p>
+      <p class="u-visually-hidden">The map needs JavaScript. Without it you cannot place a guess.</p>
     </noscript>
   <% end %>
 </div>

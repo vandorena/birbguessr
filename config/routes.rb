@@ -35,6 +35,8 @@ Rails.application.routes.draw do
   # get "manifest" => "rails/pwa#manifest", as: :pwa_manifest
   # get "service-worker" => "rails/pwa#service_worker", as: :pwa_service_worker
 
-  # Defines the root path route ("/")
-  root "home#index"
+  # The gallery is the landing page. It renders signed out -- you can look at
+  # the birbs without an account; you just cannot open one, which is where the
+  # sign-in flow picks you up.
+  root "birbs#index"
 end

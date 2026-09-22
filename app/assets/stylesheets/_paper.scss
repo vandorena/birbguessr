@@ -1,0 +1,41 @@
+// The ruled sheet the app is drawn on, generated rather than drawn.
+//
+// It used to be two SVG artboards, 1280x803 each, stretched to the window.
+// That could not survive a page that scrolls: an artboard is a fixed height,
+// and its stripes do not divide into it evenly, so tiling one down a long page
+// puts a jog at every seam. Stretching it instead scaled the 44px pitch with
+// the window, which is what made the ruling uneven at any height but the
+// design's own 832px.
+//
+// Two repeating gradients have neither problem. They are exact at 11px and
+// 44px whatever the window does, they extend as far as the document goes, and
+// they scroll with it because that is what a background does by default.
+//
+// The ruling in the design is two layers on a 44px pitch, offset half a pitch
+// from each other and tinted slightly differently. Interleaved, that is what
+// this single repeating gradient says directly: 11px on, 11px off, alternating
+// tint, forever.
+.page {
+  // No reset in this app, and a browser's default 8px on the body would push
+  // the sheet off the top-left corner.
+  margin: 0;
+  min-height: 100vh;
+  background-color: var(--colour-pink);
+  background-image:
+    linear-gradient(
+      to right,
+      transparent 0 42px,
+      var(--colour-pink-margin) 42px 53px,
+      transparent 53px
+    ),
+    repeating-linear-gradient(
+      to bottom,
+      var(--colour-rule-a) 0 11px,
+      transparent 11px 22px,
+      var(--colour-rule-b) 22px 33px,
+      transparent 33px 44px
+    );
+  // The margin rule runs the full height; the ruling starts where the design
+  // starts it.
+  background-position: 0 0, 0 25px;
+}

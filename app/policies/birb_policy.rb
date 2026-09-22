@@ -1,5 +1,7 @@
 class BirbPolicy < ApplicationPolicy
-  def index? = user.present?
+  # The gallery is the landing page, and it is the advertisement for the game:
+  # you can see that there are birbs before you have an account.
+  def index? = true
 
   def show? = user.present?
 

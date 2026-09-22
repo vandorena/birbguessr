@@ -43,4 +43,39 @@ class UserTest < ActiveSupport::TestCase
 
     assert_raises(ActiveRecord::RecordInvalid) { User.create!(email_address: "DUPE@brown.edu") }
   end
+
+  # Aliases
+
+  test "a plus-alias is the same account as the address it delivers to" do
+    user = User.create!(email_address: "someone@brown.edu")
+
+    assert_equal user, User.find_by(email_address: "someone+birbs@brown.edu")
+
+    # And a second sign-up through the alias is the same row, not a new one.
+    assert_no_difference "User.count" do
+      User.find_or_create_by(email_address: "someone+other@brown.edu")
+    end
+  end
+
+  test "the tag is dropped on the way in" do
+    user = User.create!(email_address: "Someone+Tag@Brown.edu ")
+
+    assert_equal "someone@brown.edu", user.email_address
+  end
+
+  test "one address is allowed to keep its aliases apart" do
+    exempt = User::ALIASES_ALLOWED_FOR.sole
+    local = exempt.split("@").first
+
+    kept = User.create!(email_address: "#{local}+alt@brown.edu")
+
+    assert_equal "#{local}+alt@brown.edu", kept.email_address
+    assert_not_equal kept, User.create!(email_address: exempt)
+  end
+
+  # Folding either of these would merge two real mailboxes into one account.
+  test "dots and subdomains are left alone" do
+    assert_equal "j.smith@brown.edu", User.canonical_address("j.smith@brown.edu")
+    assert_equal "you@alumni.brown.edu", User.canonical_address("you@alumni.brown.edu")
+  end
 end

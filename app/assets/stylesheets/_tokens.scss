@@ -3,4 +3,45 @@
 // Plain CSS custom properties rather than Sass variables, so they can be read
 // and overridden at runtime (media queries, a theme class on <body>).
 //
-// Empty for now. Colours, type scale and spacing go here as they are decided.
+// The three pinks are the whole palette of the birb show design: the page
+// ground, the shape drawn on it, and the faint ruling behind both.
+:root {
+  --colour-pink: #f7c9c9;
+  --colour-pink-deep: #fba8a8;
+  // The two tints of the ruling, interleaved by _paper.scss. Both are the
+  // design's stripe colours at the alpha it draws them with.
+  --colour-rule-a: rgb(223 162 162 / 0.3);
+  --colour-rule-b: rgb(226 154 154 / 0.3);
+
+  // The same two pinks at 96% brightness, for hover. Both are stepped by the
+  // identical amount on purpose: darkening only the ground would close the gap
+  // to the icon drawn on it, and the design's contrast there is slim already.
+  --colour-pink-hover: #edc1c1;
+  --colour-pink-deep-hover: #f1a1a1;
+
+  // Ink for text on the pink ground, off the index design. The deep pink above
+  // is a *shape* colour -- it reads fine as the home icon's 3.56px stroke and
+  // is 1.27:1 against the ground, which is not a contrast ratio you can set a
+  // word in. This one is 5.5:1.
+  --colour-ink: #674848;
+
+  // The translucent pill behind a card's title and date. Over the ground it is
+  // very nearly the ground; over a photograph it is what makes the text
+  // readable, which is the case it is there for.
+  --colour-pink-veil: rgb(247 201 201 / 0.76);
+
+  // The ruled margin down the left of the page, as on a sheet of paper.
+  --colour-pink-margin: rgb(255 138 138 / 0.53);
+
+  // A washed-out ground, for a control that is present but cannot be used yet.
+  // Pale enough to read as inert next to the live pink, and still 5.8:1 behind
+  // the ink -- a disabled label is a label, and it has to be legible to say
+  // what the button will do once it wakes up.
+  --colour-pink-mute: #fbe4e4;
+
+  --radius-control: 7px;
+  --radius-pill: 17px;
+  --radius-card: 22px;
+
+  --space-edge: 5px;
+}

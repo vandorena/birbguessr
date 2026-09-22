@@ -1,141 +1,204 @@
-# Handoff — session of 2026-09-21
+# Handoff — session of 2026-09-22
 
-Bootstrapped `birbguessr` from an empty git repo to a working Rails 8 app with
-passwordless Brown-only sign-in, four supporting gems, and mail through Amazon SES.
+Implemented the two Figma frames (birb show, gallery), made the gallery the landing
+page, and tightened the login throttles. **Nothing is committed** — the whole session
+is in the working tree.
 
-Three commits, all on `main`:
+The previous handoff is archived at `HANDOFF-2026-09-21.md`. Its environment notes
+(Solid Queue fork bug, pinned deps, SES account state) are still true; one claim in it
+is now false, see "Superseded" at the bottom.
 
-| | |
+105 tests passing, rubocop clean. **`bin/ci` was not run** — see open items.
+
+## What changed
+
+| Area | Files |
 |---|---|
-| `2769bbd` | Initialise Rails 8 app with Pundit, Flipper, Solid Queue and Blazer |
-| `0a74cab` | Replace password auth with Brown-only magic-link sign-in over SES |
-| `7820409` | Add `mail:config` / `mail:test` rake tasks |
+| Show page (split view) | `_birb-split.scss`, `birb_split_controller.js`, `birbs/show.html.erb`, `birbs/_map.html.erb` |
+| Gallery | `_birb-index.scss`, `birbs/index.html.erb` |
+| Shared chrome | `_paper.scss`, `_flash.scss`, `_typography.scss`, `_tokens.scss`, `_utilities.scss` |
+| Landing page + auth | `config/routes.rb`, `birbs_controller.rb`, `birb_policy.rb`, deleted `HomeController` |
+| Login throttling | `logins_controller.rb`, `user.rb` |
+| Test infrastructure | `config/environments/test.rb`, `test/test_helper.rb` |
 
-## What exists
+New assets: `app/assets/fonts/bluebird.regular.ttf`, `app/assets/images/birbs/birb-mark.png`,
+`app/assets/images/birbs/home-button.svg`. New helper: `ApplicationHelper#inline_svg`.
 
-Rails 8.1.3.1, PostgreSQL 17 (Docker), Dart Sass + importmap, Minitest. 44 tests
-passing, rubocop clean, `zeitwerk:check` clean.
+## The show page
 
-| Gem | Where it lives |
-|---|---|
-| **Pundit** | `ApplicationController` includes `Pundit::Authorization`; `pundit_user` → `Current.user`; `NotAuthorizedError` redirects back with a flash. Policies in `app/policies/`. |
-| **Flipper** | Active Record adapter (self-registering), UI at `/flipper`. |
-| **Blazer** | UI at `/blazer`, data source from `BLAZER_DATABASE_URL`. |
-| **Solid Queue** | Dedicated `queue` database in every environment. See the caveat below. |
+Photo on the left, campus map on the right, a slider on the seam. **One rule the whole
+block turns on: moving the slider resizes nothing.**
 
-`/flipper` and `/blazer` mount behind `AdminConstraint`
-(`app/constraints/admin_constraint.rb`), which resolves the signed session cookie in
-the routing layer. Non-admins and signed-out visitors get a **404** — the routes do
-not exist for them. Verified for all three cases.
+- The map fills the entire viewport and is **clipped** with
+  `clip-path: inset(0 0 0 var(--birb-split))`. Dragging left uncovers map that was
+  always drawn. Animating a width instead would restart Leaflet's tile maths every
+  frame — it works out which tiles to fetch from its container's size.
+- `clip-path` clips hit-testing as well as paint, so the covered strip stops taking
+  guess clicks.
+- The clip is on the Leaflet container itself, not a wrapper, so the guess button —
+  a sibling inside the same Stimulus element — cannot be clipped away.
+- Bounds are **asymmetric**: left to 0 (map covers the photo), right only as far as
+  the opening position. The photo is never given more room than it was drawn with, so
+  no state shows pink through the seam.
+- `--birb-split-start` is authored in CSS as a percentage; `connect()` resolves it to
+  pixels rather than measuring the handle, because Turbo restores a cached page with
+  whatever inline `--birb-split` the last drag wrote.
 
-## Sign-in
+**Map panning is now free.** `maxBounds` + `maxBoundsViscosity: 1.0` were removed:
+that pair does not prevent a pan, it allows one and then yanks the view back on
+release. `fitBounds` still frames campus. Consequence: you can pan off campus and drop
+a pin there — the button enables, and `Guess#must_be_on_campus` rejects it on submit.
+That validation is now the *only* fence, not a backstop.
 
-No passwords. `/login` takes an email address and sends one message containing both a
-**magic link** and a **six-digit code**; either signs you in, and redeeming one burns
-the other. An unknown address creates the account, so this is also the sign-up flow.
-Adapted from the sibling `are-you-in` project's `LoginCode`, taking only the
-passwordless flow and the school-address check — not its onboarding, roles, soft
-delete or PaperTrail.
+## Chrome: the two buttons and the slider
 
-The two paths are **deliberately asymmetric**:
+Final state after a lot of iteration. Worth reading before changing any of it.
 
-- The **code** is bound to the browser that asked for it (signed cookie, bcrypt digest
-  on the row). Six digits is ~20 bits, so a code read out of someone's inbox elsewhere
-  must not be enough on its own. Five wrong guesses burn the row.
-- The **link** carries ~190 bits and has **no** browser binding, because mail is
-  routinely opened on another device. Its entropy is what makes that safe.
+| | Hover | Press | Focus |
+|---|---|---|---|
+| Home button | scale 1.08, drop-shadow, both pinks darken | scale 0.94 | outline |
+| Guess button | underline only | scale 0.94 | outline |
+| Slider | *nothing* | grip scales 0.92 | grip deepens, **no outline** |
 
-Both expire in 15 minutes, are single-use, and are stored only as digests. `LoginMailer`
-uses `deliver_now`, not `deliver_later` — the latter would persist the plaintext code and
-token to `solid_queue_jobs.arguments` and the ActiveJob log.
+- The **guess button is a `form.button`, not `form.submit`**. An `<input>` has no text
+  node and several browsers ignore `text-decoration` on one, so the hover underline
+  would simply not appear. `name: nil` drops the `name="button"` param Rails sends.
+- The slider's `outline: none` has to be stated: it is a `<button>`, so the browser
+  draws its own ring otherwise.
+- The slider press scales **the grip only**. The bar *is* the seam and sits exactly on
+  the map's clip edge; scaling it would open a gap down the middle of the page. It
+  stays pressed for the whole drag because `startDrag` captures the pointer.
+- The home button is **inlined** rather than `image_tag`'d (`ApplicationHelper#inline_svg`)
+  so CSS can reach the `<rect>` inside it and darken it on hover. `fill`/`stroke` as CSS
+  properties beat the presentation attributes in the file.
+- `--colour-ink: #674848` (5.5:1 on pink) is the text colour everywhere. The design's
+  `--colour-pink-deep` is a *shape* colour — 1.27:1 against the ground, fine for the
+  home icon's 3.56px stroke, unreadable behind a word.
 
-Sign-up is limited to `brown.edu` and its subdomains by an anchored regex
-(`User::BROWN_EMAIL_HOST`), so `notbrown.edu` and `brown.edu.attacker.com` are refused.
-Plus-addressed variants (`alexvd+test1@brown.edu`) pass.
+## The gallery, and the ruled sheet
 
-## Email (Amazon SES)
+Wordmark in **BlueBird**, the birb mark beside it, cards at 251×334 with the two
+translucent pills.
 
-Sent through SES's SMTP endpoint; the host is derived from `SES_REGION`. Settings are
-built in `lib/mail_delivery.rb` as plain functions so they are unit tested
-(`test/lib/mail_delivery_test.rb`) rather than untestable boot-time code.
+- The font file is named `.ttf` but its sfnt tag is `OTTO` — CFF outlines, i.e.
+  OpenType. `@font-face` declares `format("opentype")`; `format("truetype")` is a lie a
+  browser may act on by discarding the face. Internal family name is `BlueBird`.
+- It had to move to `app/assets/fonts/`. Propshaft's load path is the *subdirectories*
+  of `app/assets`, not `app/assets` itself — at the top level it would never have been
+  served. Verified the built CSS resolves to `/assets/bluebird.regular-<digest>.ttf`.
+- `birb-mark.png` was keyed out of an Instagram JPEG with a flat brown ground. No
+  ImageMagick/vips/Pillow on this machine, so: `sips` → BMP → pure Python → PNG.
+  Flood-filled from the edges (not a global key), soft alpha at the boundary, then
+  **colour un-mixing** `C = (P − (1−a)B) / a` on partial pixels — without that you get
+  a brown halo that only shows once it is over the pink page. Verified by compositing
+  over `#f7c9c9` and counting brown fringe pixels: zero.
 
-Current account state (read from the SES console this session):
+**The sheet is generated, not drawn.** `.page` (the `<body>`) carries two repeating
+gradients: the ruling, and the left margin rule. This replaced two SVG artboards, and
+the history matters because the naive versions are both wrong:
 
-- Region **us-east-2**, **production access granted** — 50,000/day, 14/sec. No recipient
-  verification needed, so any `@brown.edu` address can receive mail.
-- Domain identity `staging.alexvd.dev` verified, Easy DKIM 2048-bit successful, custom
-  MAIL FROM `mail.staging.alexvd.dev`.
-- `MAIL_FROM` is set to `birbguessr <login@staging.alexvd.dev>` — the `From:` header, which
-  is distinct from the custom MAIL FROM (envelope/Return-Path) domain.
+- Stretching a fixed-height artboard to the window **scales the 44px pitch with it**.
+  The design's two layers are offset a flat 22px, which is half a pitch only at its
+  own 832px height — at 1080px the gaps alternated 22.0 / 35.6.
+- Tiling one instead puts a jog at every seam: 44 does not divide 803.
 
-```bash
-bin/rails mail:config                       # show delivery method, host, sender
-bin/rails 'mail:test[you@brown.edu]'        # send a real message
-```
+Gradients are exact at 11px/44px at any size and extend as far as the document goes,
+which is what lets the landing page scroll. The ruling now reads *finer* on a tall
+window than it used to — that is the design's actual pitch. Both `lines*.svg` are
+deleted.
+
+`.page` also sets `margin: 0`: there is no CSS reset in this app and the gallery was
+sitting 8px off the corner.
+
+## Landing page and auth
+
+`root "birbs#index"`. The gallery renders signed out (`allow_unauthenticated_access
+only: :index`, `BirbPolicy#index?` is `true`). Opening a birb still requires a session,
+and `request_authentication` already stored the URL — so clicking a birb signs you in
+and returns you to *that birb*. There is a test asserting the exact URL is stored.
+
+**The subtle bit:** skipping the auth requirement also skips resuming the session, so
+`Current.user` would be nil in `index` even for a signed-in visitor. The page would
+still render — just with no pill and no guessed-birb marks. Hence the explicit
+`before_action :resume_session, only: :index`.
+
+`HomeController`, its view and its test are deleted (nothing routed to it). That
+stranded sign-out, which lived only on that page, so the "Signed in" pill carries a
+small sign-out link.
+
+## Login throttling and aliases
+
+Three named limits on `LoginsController`:
+
+| Name | Limit | Keyed by |
+|---|---|---|
+| `login-email` | 5 / 15 min | canonical mailbox (was: address as typed) |
+| `login-ip` | 30 / hour | `request.remote_ip` — **new** |
+| `code-attempts` | 20 / 15 min | `request.remote_ip` |
+
+**All three must keep their `name:`.** Rails keys a limit on `[scope, name, by]` and
+scope defaults to the controller path, so the two IP-keyed limits would otherwise share
+a bucket: 21 code requests would push the code-attempt counter past 20 and lock a
+visitor out of typing a code they never typed. There is a test for exactly that, and it
+fails if the names are removed (verified both directions).
+
+`User.normalize_address` drops the `+tag`, so one mailbox is one account — which
+matters because a guess is unique per user per birb, so a second account is a second
+guess on every birb. `User::ALIASES_ALLOWED_FOR = ["alexvd@brown.edu"]` is exempt and
+keeps its aliases apart. Rails applies `normalizes` to finder arguments, so `find_by`
+and `find_or_create_by` resolve an alias to the existing row.
+
+**Only the `+tag` is folded.** Dots are not (a Gmail convention; at Brown `j.smith@`
+and `jsmith@` are two people) and neither is the host (`brown.edu` and
+`alumni.brown.edu` are separate mail domains). Folding either would merge two real
+mailboxes into one account.
+
+## Test environment
+
+`config.cache_store` in test was `:null_store`. `rate_limit` counts through the cache,
+so **every throttle in the app was silently inert in the suite** — untestable, and any
+break would have passed. It is `:memory_store` now, with `Rails.cache.clear` in
+`test_helper` setup so counters do not leak between tests.
 
 ## Open items
 
-1. **Untested end to end against real SES.** `bin/rails mail:test` has never been run
-   with live credentials. That is the next step.
-2. **No safety net on outbound mail.** The account is out of the sandbox, so development
-   will email any real Brown address someone types at `/login`. Consider setting
-   `MAIL_INTERCEPT_TO=alexvd+ses@brown.edu` while testing — every message then goes to
-   that inbox with the intended recipient preserved in the subject.
-3. **Check SES for bounces.** See "What went wrong" below.
-4. `AdminConstraint` is the only authorization actually in use; Pundit is wired up but has
-   no policies beyond the generated `ApplicationPolicy`.
+1. **Nothing has been verified visually.** There is no `test/system`, no browser driver,
+   and no screenshots were taken this session. Every design claim above is read off the
+   compiled CSS against the Figma render. This is the biggest gap — run `bin/dev` and
+   look at both pages before trusting any of it. Mobile (<700px) layouts especially:
+   they are written but have never been rendered.
+2. **`bin/ci` was not run.** Only `bin/rubocop -a` and `bin/rails test`. Brakeman,
+   bundler-audit, importmap audit and `db:seed:replant` are unexercised against these
+   changes — the seeds in particular, since `HomeController` was deleted.
+3. **No visible way to sign in when signed out** except clicking a birb. `/login` is
+   reachable directly. Deliberate, per the spec given, but worth a second look.
+4. **Subdomain aliases are still separate accounts.** `you@brown.edu` and
+   `you@alumni.brown.edu` are two players. That is a policy call, not an oversight.
+5. **The rate-limit numbers are guesses.** 30/hour per IP is chosen against a shared
+   campus NAT — a dorm signing in after a launch arrives from one address. The failure
+   mode is a locked-out building, so turn it up if real traffic trips it.
+6. **`birb-mark.png` provenance.** Sourced from an Instagram profile picture. Confirm
+   the rights before this ships publicly.
+7. **Off-campus pins are now reachable.** Panning is free, so a player can drop a pin
+   off campus and only find out on submit. Catching it at click time in
+   `birb_map_controller#place` would be kinder.
+8. **Two additions are not in the Figma frames**, both flagged at the time: the guess
+   submit button (the frame has none, and the game is unplayable without it) and the
+   "Post a birb" link (the only route to `/birbs/new`). The guessed/not-guessed state is
+   `u-visually-hidden` rather than drawn, for the same reason.
 
-## Known environment issue: Solid Queue workers
+## Superseded
 
-Solid Queue is installed and enqueues correctly, but **its worker cannot run on this
-machine**. The supervisor forks workers, and on Ruby 4.0.5 + pg 1.6.3 + macOS,
-`PG.connect` segfaults in any forked child once the parent has opened a libpq connection.
-Reproducible with no Rails involved:
+`HANDOFF-2026-09-21.md` says "Plus-addressed variants (`alexvd+test1@brown.edu`) pass."
+They still pass validation, but they no longer create separate accounts — they collapse
+onto the mailbox, except for the one address in `User::ALIASES_ALLOWED_FOR`.
 
-```ruby
-require "pg"
-PG.connect(...)            # parent connects once
-fork { PG.connect(...) }   # child segfaults in connect_start
+## Commands
+
+```bash
+bin/dev                       # Puma + dartsass:watch
+bin/rails test
+bin/rubocop -a
+bin/ci                        # the local gate; not run this session
+bin/rails dartsass:build      # after editing .scss without bin/dev running
 ```
-
-Neither `force_ruby_platform` on `pg`, a numeric host, nor
-`OBJC_DISABLE_INITIALIZE_FORK_SAFETY=YES` fixes it (the last one clears the ObjC abort but
-the segfault remains once the parent has connected). Consequences, all deliberate:
-
-- `development.rb` uses `queue_adapter = :async`. Production stays `:solid_queue`.
-- `SOLID_QUEUE_IN_PUMA` is **not** set — it makes Puma boot the forking supervisor, which
-  crashes and takes the web server down with it.
-
-Linux (CI, Docker, production) is unaffected. Ruby 3.x was not tested — only 4.0.5 is
-installed. Revert by swapping the development adapter back to `:solid_queue`.
-
-## Pinned dependencies
-
-- `json ~> 2.21` — Ruby 4.0 ships json 3.x, but Rails 8.1's `ActiveSupport::JSON.decode`
-  calls `JSON.parse(json, options)` with a positional hash, which json 3 rejects. This
-  broke Solid Queue job deserialization.
-- `pg` with `force_ruby_platform: true` — builds against the local libpq. Kept after the
-  fork investigation even though it did not fix that particular problem.
-
-## What went wrong this session
-
-Worth knowing about, because two of these have lingering consequences.
-
-1. **`.env.example` was never committed.** Rails' default `/.env*` rule swallowed it and
-   `git add -A` skipped it silently. The README told people to `cp .env.example .env`, for
-   a file that did not exist in the repo. An earlier summary claimed it was committed —
-   that was wrong. Fixed by adding `!/.env.example`.
-
-2. **The test suite attempted live SES sends.** `config/initializers/mail_delivery.rb`
-   overrode `test.rb`'s `delivery_method = :test` whenever SMTP settings were present, and
-   dotenv loads `.env` in test too. The moment real SES credentials were added, the suite
-   switched to `:smtp` and tried to deliver to the fabricated fixture addresses
-   (`newbie@brown.edu`, `member@brown.edu`, `dupe@brown.edu`). Since the account is out of
-   the sandbox, SES would have accepted those and bounced them off Brown's mail server.
-   **Check the SES account dashboard for bounce rate before sending anything else** — a
-   spike in bounces to a single real domain is exactly what damages sender reputation.
-   Fixed by guarding the whole initializer block on `Rails.env.test?`, with a regression
-   test asserting `delivery_method == :test`.
-
-3. Docker Desktop was installed but not running for most of the session; the Homebrew
-   `docker` CLI also shadowed Desktop's, hiding the compose plugin. Both resolved.

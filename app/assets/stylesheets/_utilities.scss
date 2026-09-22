@@ -2,5 +2,21 @@
 //
 // Keep this small. A helper earns its place here only when several unrelated
 // blocks need it; anything used by one block belongs in that block's partial.
+
+// Present to a screen reader, absent to everything else. The birb show page is
+// a photo and a map, and neither says anything without JavaScript or sight --
+// so the headings, the coordinate readout and the building list are all still
+// in the document, just not on the screen.
 //
-// Empty for now.
+// Not `display: none`: that would take it out of the accessibility tree too.
+.u-visually-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  margin: -1px;
+  padding: 0;
+  overflow: hidden;
+  clip-path: inset(50%);
+  white-space: nowrap;
+  border: 0;
+}

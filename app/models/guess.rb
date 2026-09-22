@@ -19,9 +19,8 @@ class Guess < ApplicationRecord
   end
 
   private
-    # The map's maxBounds keeps a player on campus, but that is a convenience in
-    # their browser, not a constraint: a hand-rolled POST can put a pin in
-    # Antarctica. This is the check that counts.
+    # The map pans freely and fences nothing, so this is not a backstop -- it is
+    # the only thing keeping a pin out of Antarctica.
     def must_be_on_campus
       return if latitude.blank? || longitude.blank?
       return if Campus.contains?(latitude, longitude)

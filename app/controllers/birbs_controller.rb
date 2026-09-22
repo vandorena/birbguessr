@@ -1,6 +1,17 @@
 class BirbsController < ApplicationController
-  # Nothing calls allow_unauthenticated_access, so the Authentication concern's
-  # default before_action covers every action here.
+  # The gallery is the landing page and renders to anyone. Every other action
+  # here is still covered by the Authentication concern's default before_action
+  # -- opening a birb signs you in first, and request_authentication remembers
+  # which birb you were opening.
+  allow_unauthenticated_access only: :index
+
+  # Skipping the requirement is not the same as ignoring the cookie. The gallery
+  # is public but not impersonal: it marks which birbs you have already guessed,
+  # and it says whether you are signed in. Without this, Current.user is nil for
+  # a signed-in visitor by the time index runs, and both of those go quietly
+  # wrong -- the page renders, just as though nobody were there.
+  before_action :resume_session, only: :index
+
   after_action :verify_authorized
 
   def index
