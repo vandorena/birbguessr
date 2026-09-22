@@ -10,7 +10,7 @@
 #
 # It's strongly recommended that you check this file into your version control system.
 
-ActiveRecord::Schema[8.1].define(version: 2026_09_22_012902) do
+ActiveRecord::Schema[8.1].define(version: 2026_09_22_015751) do
   # These are extensions that must be enabled in order to support this database
   enable_extension "pg_catalog.plpgsql"
 
@@ -86,6 +86,22 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_012902) do
     t.index ["feature_key", "key", "value"], name: "index_flipper_gates_on_feature_key_and_key_and_value", unique: true
   end
 
+  create_table "login_codes", force: :cascade do |t|
+    t.integer "attempts", default: 0, null: false
+    t.string "browser_token_digest", null: false
+    t.string "code_digest", null: false
+    t.datetime "created_at", null: false
+    t.inet "ip_address"
+    t.string "link_token_digest", null: false
+    t.datetime "updated_at", null: false
+    t.datetime "used_at"
+    t.string "user_agent"
+    t.bigint "user_id", null: false
+    t.index ["link_token_digest"], name: "index_login_codes_on_link_token_digest", unique: true
+    t.index ["user_id", "used_at", "created_at"], name: "index_login_codes_on_user_id_and_used_at_and_created_at"
+    t.index ["user_id"], name: "index_login_codes_on_user_id"
+  end
+
   create_table "sessions", force: :cascade do |t|
     t.datetime "created_at", null: false
     t.string "ip_address"
@@ -99,10 +115,10 @@ ActiveRecord::Schema[8.1].define(version: 2026_09_22_012902) do
     t.boolean "admin", default: false, null: false
     t.datetime "created_at", null: false
     t.string "email_address", null: false
-    t.string "password_digest", null: false
     t.datetime "updated_at", null: false
     t.index ["email_address"], name: "index_users_on_email_address", unique: true
   end
 
+  add_foreign_key "login_codes", "users"
   add_foreign_key "sessions", "users"
 end

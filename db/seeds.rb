@@ -1,13 +1,13 @@
 # Idempotent development seeds: `bin/rails db:seed`.
 #
-# Two accounts, both with the password "password123". The admin one is what gets you
-# into /flipper and /blazer.
+# There are no passwords -- sign-in is an emailed link or code. Use these
+# addresses at /login; in development the email is written to tmp/mails.
 if Rails.env.local?
-  admin = User.find_or_initialize_by(email_address: "admin@birbguessr.test")
-  admin.update!(password: "password123", admin: true)
+  admin = User.find_or_initialize_by(email_address: "admin@brown.edu")
+  admin.update!(admin: true)
 
-  member = User.find_or_initialize_by(email_address: "plain@birbguessr.test")
-  member.update!(password: "password123", admin: false)
+  member = User.find_or_initialize_by(email_address: "plain@brown.edu")
+  member.update!(admin: false)
 
-  puts "Seeded #{User.count} users (admin@birbguessr.test / plain@birbguessr.test, password123)"
+  puts "Seeded #{User.count} users (admin@brown.edu, plain@brown.edu)"
 end

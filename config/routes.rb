@@ -5,8 +5,15 @@ Rails.application.routes.draw do
     mount Blazer::Engine => "/blazer"
   end
 
-  resource :session
-  resources :passwords, param: :token
+  # Passwordless sign-in. Requesting a code also creates the account, so this is
+  # both the sign-up and the sign-in flow.
+  get    "login"          => "logins#new",      as: :new_login
+  post   "login"          => "logins#create",   as: :login
+  get    "login/verify"   => "logins#verify",   as: :verify_login
+  post   "login/verify"   => "logins#complete", as: :complete_login
+  # The magic link. Last, so it cannot shadow /login/verify above.
+  get    "login/:token"   => "logins#show",     as: :login_link
+  delete "logout"         => "sessions#destroy", as: :logout
   # Define your application routes per the DSL in https://guides.rubyonrails.org/routing.html
 
   # Reveal health status on /up that returns 200 if the app boots with no exceptions, otherwise 500.

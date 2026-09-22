@@ -1,4 +1,6 @@
 module SessionTestHelper
+  # Signs in without going through the email round trip. The login flow itself
+  # is covered in test/controllers/logins_controller_test.rb.
   def sign_in_as(user)
     Current.session = user.sessions.create!
 
