@@ -94,6 +94,26 @@ verified inbox so no real address can be emailed by accident.
 The settings are built in `lib/mail_delivery.rb` as plain functions so they can be unit
 tested (`test/lib/mail_delivery_test.rb`) rather than being untestable boot-time code.
 
+To check what is configured and to send a real message:
+
+```bash
+bin/rails mail:config
+bin/rails 'mail:test[you@brown.edu]'
+```
+
+### SES sandbox
+
+A new SES account is sandboxed **per region**: you can only send *to* verified identities,
+at 200 messages/day and 1/second. So verify both the sender and every test recipient under
+Configuration → Identities.
+
+The recipient check is an exact address match. SES does document that labels need no extra
+verification — "if you already verified sender@example.com, you can use
+sender+myLabel@example.com" — but that allowance is written for the **From / Return-Path**
+address, not for sandbox recipients. So to send to `you+test1@brown.edu`, verify that exact
+address as its own identity. The verification email lands in the unlabelled inbox anyway,
+so this costs one extra click per label.
+
 `/flipper` and `/blazer` are mounted behind `AdminConstraint`
 (`app/constraints/admin_constraint.rb`), which resolves the signed session cookie in the
 routing layer. Non-admins and signed-out visitors get a 404 — the routes do not exist for them.
