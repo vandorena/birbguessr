@@ -14,8 +14,9 @@
     <%# Enable PWA manifest for installable apps (make sure to enable in config/routes.rb too!) %>
     <%#= tag.link rel: "manifest", href: pwa_manifest_path(format: :json) %>
 
+    <%# The birb mark, on a transparent square. No SVG variant: browsers that
+        support one prefer it, so a stale icon.svg would win over this. %>
     <link rel="icon" href="/icon.png" type="image/png">
-    <link rel="icon" href="/icon.svg" type="image/svg+xml">
     <link rel="apple-touch-icon" href="/icon.png">
 
     <%# :app links every app/assets/**/*.css. The .scss sources are excluded from
