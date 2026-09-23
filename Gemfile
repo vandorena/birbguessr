@@ -50,6 +50,10 @@ gem "thruster", require: false
 # Use Active Storage variants [https://guides.rubyonrails.org/active_storage_overview.html#transforming-images]
 gem "image_processing", "~> 1.2"
 
+# S3-backed Active Storage in production; local disk isn't persisted across
+# container redeploys [https://guides.rubyonrails.org/active_storage_overview.html#amazon-s3-service]
+gem "aws-sdk-s3", require: false
+
 # Minimal authorization through OO design and pure Ruby classes [https://github.com/varvet/pundit]
 gem "pundit"
 
