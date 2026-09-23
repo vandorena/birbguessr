@@ -24,6 +24,12 @@ Rails.application.configure do
   # Store uploaded files on the local file system (see config/storage.yml for options).
   config.active_storage.service = :local
 
+  # Signed blob URLs default to a 5-minute expiry, which breaks any page left
+  # open longer than that. Local disk isn't a proxy to a third-party bucket
+  # with its own expiring-credential requirement, so there's no reason for
+  # short-lived URLs here.
+  config.active_storage.service_urls_expire_in = 5.years
+
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
 
