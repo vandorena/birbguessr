@@ -25,7 +25,7 @@ gem "jbuilder"
 # Pin json to 2.x: Ruby 4.0 ships json 3.x as a default gem, but Rails 8.1's
 # ActiveSupport::JSON.decode still calls JSON.parse(json, options) with a positional
 # options hash, which json 3 rejects. That breaks Solid Queue job deserialization.
-gem "json", "~> 2.21"
+gem "json", "~> 3.0"
 
 # Use Active Model has_secure_password [https://guides.rubyonrails.org/active_model_basics.html#securepassword]
 gem "bcrypt", "~> 3.1.7"
