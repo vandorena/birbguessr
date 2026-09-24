@@ -27,8 +27,9 @@ Rails.application.configure do
   config.active_storage.service = :amazon
 
   # Signed blob URLs default to a 5-minute expiry, which breaks any page left
-  # open longer than that.
-  config.active_storage.service_urls_expire_in = 5.years
+  # open longer than that. 1.week is the ceiling -- S3 presigned URLs (SigV4)
+  # hard-cap expiry at 7 days and raise ArgumentError past it.
+  config.active_storage.service_urls_expire_in = 1.week
 
   # Assume all access to the app is happening through a SSL-terminating reverse proxy.
   # config.assume_ssl = true
