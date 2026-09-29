@@ -1,0 +1,116 @@
+// The sign-in pages: a single card, centred on the ruled paper ground every
+// other page here sits on (.page, from _paper.scss, is already on <body>).
+// Top-anchored, not centred: the wordmark's own gap to the card (below) and
+// this padding-top (above, to the window edge) are the same value, on
+// purpose, so the wordmark sits equidistant between the two rather than
+// wherever the vertical centre of a variable-height card happens to land.
+// height, not min-height: a min-height box grows past the viewport to fit its
+// content instead of ever triggering its own overflow, which just pushes the
+// scrollbar onto the document instead. Fixed height is what makes this
+// element's overflow: hidden actually clip rather than never firing -- and
+// body.page--logins below stops the document itself from scrolling too.
+.login {
+  display: flex;
+  height: 100vh;
+  align-items: flex-start;
+  justify-content: center;
+  padding: 3rem clamp(1rem, 5vw, 3rem) 2rem;
+  overflow: hidden;
+}
+
+body.page--logins {
+  overflow: hidden;
+}
+
+// Wordmark above, card below, both the same width so the mark reads as the
+// card's own header rather than a separate thing floating over it.
+.login__stack {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 100%;
+  max-width: 26rem;
+}
+
+.login__card {
+  width: 100%;
+  border: 2px solid var(--colour-pink-deep);
+  border-radius: var(--radius-card);
+  padding: 2.5rem clamp(1.5rem, 5vw, 2.5rem);
+  background-color: var(--colour-pink-veil);
+  color: var(--colour-ink);
+}
+
+// Bigger than the gallery's own clamp(2.25rem, 4.5vw, 57px) -- it is alone up
+// here rather than sharing the header with a session pill and a post link, so
+// it can take the room. margin-bottom matches .login's own padding-top: that
+// pairing is what centres the mark between the ceiling and the card.
+.login__wordmark {
+  margin: 0 0 3rem;
+  font-size: clamp(3rem, 7vw, 4.25rem);
+}
+
+.login__title {
+  margin: 0 0 0.75rem;
+  font-size: 1.75rem;
+  font-weight: 700;
+}
+
+.login__intro {
+  margin: 0 0 1.5rem;
+  line-height: 1.5;
+}
+
+.login__field {
+  display: flex;
+  flex-direction: column;
+  gap: 0.35rem;
+  margin-bottom: 1.25rem;
+}
+
+.login__field label {
+  font-weight: 600;
+  font-size: 0.9rem;
+}
+
+.login__field input {
+  border: 2px solid var(--colour-pink-deep);
+  border-radius: var(--radius-control);
+  // Trimmed by the border's own 2px so the box stays the same size as the
+  // borderless controls elsewhere -- there is no border-box reset in this app.
+  padding: calc(0.65rem - 2px) calc(0.85rem - 2px);
+  background-color: #fff;
+  color: var(--colour-ink);
+  font: inherit;
+}
+
+.login__field input:focus {
+  outline: none;
+}
+
+// .u-button is the shape; full width and the border below are this form's
+// own call, so they stay here rather than in the shared class -- the
+// birb-split guess button sits on its own photo/map backdrop and reads fine
+// flat, but this one is beside plain text on a flat card and wants a border
+// to say "button" on top of colour alone.
+.login__submit {
+  width: 100%;
+  border: 2px solid var(--colour-pink-deep);
+}
+
+// .u-button's hover state is an underline, which reads fine for the guess
+// button's single word beside a map but disappears into "Email me a
+// sign-in link" -- so this one keeps its colour-only hover instead.
+.login__submit:hover:not(:disabled) {
+  text-decoration: none;
+}
+
+.login__footnote {
+  margin: 1.5rem 0 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.login__footnote a {
+  color: inherit;
+}

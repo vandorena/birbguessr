@@ -1,19 +1,25 @@
-<div>
-  <h1>Sign in to birbguessr</h1>
-  <p>
-    Brown addresses only. We'll email you a link and a code — either one signs you in.
-    If you don't have an account yet, this creates one.
-  </p>
+<div class="login">
+  <div class="login__stack">
+    <%= render "shared/wordmark", tag_name: :p, class_name: "login__wordmark" %>
 
-  <%= render "shared/flash" %>
+    <div class="login__card">
+      <h1 class="login__title">Sign in to birbguessr</h1>
+      <p class="login__intro">
+        Brown addresses only. We'll email you a link and a code — either one signs you in.
+        If you don't have an account yet, this creates one.
+      </p>
 
-  <%= form_with url: login_path, scope: :login do |form| %>
-    <div>
-      <%= form.label :email_address, "Email address" %>
-      <%= form.email_field :email_address, required: true, autofocus: true,
-            autocomplete: "email", placeholder: "you@brown.edu" %>
+      <%= render "shared/flash" %>
+
+      <%= form_with url: login_path, scope: :login do |form| %>
+        <div class="login__field">
+          <%= form.label :email_address, "Email address" %>
+          <%= form.email_field :email_address, required: true, autofocus: true,
+                autocomplete: "email", placeholder: "you@brown.edu" %>
+        </div>
+
+        <%= form.submit "Email me a sign-in link", class: "u-button login__submit" %>
+      <% end %>
     </div>
-
-    <%= form.submit "Email me a sign-in link" %>
-  <% end %>
+  </div>
 </div>

@@ -1,0 +1,11 @@
+<%# The birb mark plus "Birbguessr", styled by .wordmark in _typography.scss.
+    tag_name lets each caller say whether this doubles as the page's own
+    heading (the gallery) or sits decoratively beside a heading of its own
+    (the sign-in card) -- so a page never ends up with two <h1>s. class_name
+    is for a caller that needs its own sizing or spacing on top of .wordmark,
+    such as the sign-in card shrinking the mark to fit. %>
+<%= content_tag tag_name, class: class_names("wordmark", local_assigns[:class_name]) do %>
+  <%# Decorative: the word beside it already names the site. %>
+  <%= image_tag "birbs/birb-mark.png", alt: "", class: "wordmark__mark" %>
+  Birbguessr
+<% end %>

@@ -17,3 +17,28 @@
   // beats showing a hole where the name of the site goes.
   font-display: swap;
 }
+
+// The birb mark plus "Birbguessr", set in the face above. Shared by the
+// gallery header and the sign-in card -- rendered by shared/_wordmark.html.erb
+// so the two never drift, sized here off font-size rather than in pixels so
+// a caller only has to set that to scale the whole mark.
+.wordmark {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.4em;
+  margin: 0;
+  font-family: "BlueBird", Georgia, serif;
+  font-size: clamp(2.25rem, 4.5vw, 57px);
+  font-weight: 400;
+  line-height: 1.2;
+  text-align: center;
+}
+
+// Sized off the wordmark rather than in pixels, so the two scale together as
+// the heading does. Its own aspect ratio is held by width: auto -- the source
+// is not square, and forcing it to a box would squash the bird.
+.wordmark__mark {
+  width: auto;
+  height: 1.4em;
+}

@@ -20,3 +20,60 @@
   white-space: nowrap;
   border: 0;
 }
+
+// The pink pill button, lifted out of the birb show page's guess submit so
+// every primary action -- that one included -- wears the same shape and the
+// same states instead of each page inventing its own.
+.u-button {
+  height: 45px;
+  border: 0;
+  border-radius: var(--radius-control);
+  padding: 0 1.25rem;
+  background-color: var(--colour-pink);
+  // Not --colour-pink-deep, which is what the birb-split home icon is drawn
+  // in: the same pink behind a word instead of a stroke is 1.27:1 and
+  // unreadable.
+  color: var(--colour-ink);
+  font: inherit;
+  font-weight: 600;
+  cursor: pointer;
+  transition: transform 120ms ease, filter 120ms ease,
+              background-color 120ms ease, color 120ms ease;
+}
+
+.u-button:hover:not(:disabled) {
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+// Past its resting size, so the press is felt against the hover rather than
+// against nothing -- on a touch screen :hover sticks after the tap, and a
+// press that only returned to 1 would look like the button had not moved.
+.u-button:active:not(:disabled) {
+  transform: scale(0.94);
+  filter: none;
+}
+
+.u-button:focus-visible {
+  outline: 3px solid var(--colour-pink-deep);
+  outline-offset: 2px;
+}
+
+// Drawn with a paler ground rather than turned down with opacity: the button
+// is opaque in every state, so whatever sits behind it never shows through.
+.u-button:disabled {
+  background-color: var(--colour-pink-mute);
+  cursor: not-allowed;
+}
+
+// A button that jumps is a button that hurts, for some people literally. The
+// colours still respond; only the movement stops.
+@media (prefers-reduced-motion: reduce) {
+  .u-button {
+    transition: none;
+  }
+
+  .u-button:active {
+    transform: none;
+  }
+}

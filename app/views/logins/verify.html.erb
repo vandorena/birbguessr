@@ -1,23 +1,29 @@
-<div>
-  <h1>Check your email</h1>
-  <p>
-    We sent you a sign-in link and a six-digit code. Click the link, or type the code
-    here. Both expire in <%= LoginCode::EXPIRATION.inspect %>.
-  </p>
+<div class="login">
+  <div class="login__stack">
+    <%= render "shared/wordmark", tag_name: :p, class_name: "login__wordmark" %>
 
-  <%= render "shared/flash" %>
+    <div class="login__card">
+      <h1 class="login__title">Check your email</h1>
+      <p class="login__intro">
+        We sent you a sign-in link and a six-digit code. Click the link, or type the code
+        here. Both expire in <%= LoginCode::EXPIRATION.inspect %>.
+      </p>
 
-  <%= form_with url: complete_login_path do |form| %>
-    <div>
-      <%= form.label :code, "Sign-in code" %>
-      <%= form.text_field :code, required: true, autofocus: true,
-            autocomplete: "one-time-code", inputmode: "numeric", placeholder: "123-456" %>
+      <%= render "shared/flash" %>
+
+      <%= form_with url: complete_login_path do |form| %>
+        <div class="login__field">
+          <%= form.label :code, "Sign-in code" %>
+          <%= form.text_field :code, required: true, autofocus: true,
+                autocomplete: "one-time-code", inputmode: "numeric", placeholder: "123-456" %>
+        </div>
+
+        <%= form.submit "Sign in", class: "u-button login__submit" %>
+      <% end %>
+
+      <p class="login__footnote">
+        <%= link_to "Use a different email address", new_login_path %>
+      </p>
     </div>
-
-    <%= form.submit "Sign in" %>
-  <% end %>
-
-  <p>
-    <%= link_to "Use a different email address", new_login_path %>
-  </p>
+  </div>
 </div>

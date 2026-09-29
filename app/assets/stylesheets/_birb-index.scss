@@ -13,26 +13,8 @@
   margin-bottom: 51px;
 }
 
-.birb-index__wordmark {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 0.4em;
-  margin: 0;
-  font-family: "BlueBird", Georgia, serif;
-  font-size: clamp(2.25rem, 4.5vw, 57px);
-  font-weight: 400;
-  line-height: 1.2;
-  text-align: center;
-}
-
-// Sized off the wordmark rather than in pixels, so the two scale together as
-// the heading does. Its own aspect ratio is held by width: auto -- the source
-// is not square, and forcing it to a box would squash the bird.
-.birb-index__mark {
-  width: auto;
-  height: 1.4em;
-}
+// The wordmark itself -- shared/_wordmark.html.erb, styled by .wordmark in
+// _typography.scss -- sits inside the header at the gallery's own size.
 
 // Top left, opposite the post link, both hung off the header rather than laid
 // out beside the wordmark -- the wordmark is centred in the window, not in what
@@ -52,23 +34,24 @@
 }
 
 // Sign-out has to live somewhere, and with the old landing page gone this pill
-// is the only chrome a signed-in player sees. Drawn as a link rather than a
-// button: it is a footnote to the pill, not a second control competing with it.
+// is the only chrome a signed-in player sees. A small chip of its own rather
+// than an underlined word floating in the middle of the pill, which read as a
+// stray bit of link text rather than a control.
 .birb-index__signout button {
   border: 0;
-  padding: 0;
-  background: none;
-  color: inherit;
+  border-radius: var(--radius-pill);
+  padding: 0.15em 0.6em;
+  background-color: var(--colour-pink);
+  color: var(--colour-ink);
   font: inherit;
-  font-size: 0.85em;
-  text-decoration: underline;
-  text-underline-offset: 3px;
+  font-size: 0.8em;
+  font-weight: 600;
   cursor: pointer;
-  opacity: 0.75;
+  transition: background-color 120ms ease;
 }
 
 .birb-index__signout button:hover {
-  opacity: 1;
+  background-color: var(--colour-pink-hover);
 }
 
 .birb-index__post {

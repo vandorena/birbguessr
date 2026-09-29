@@ -159,12 +159,18 @@
 
 // The two chrome buttons. One is the home icon from the design, top right; the
 // other is the guess submit, bottom right, wearing the same shape and the same
-// two pinks -- which is why every state below is written once for both.
+// two pinks -- which is why the shared shape below is written once for both.
 .birb-split__home,
 .birb-split__button {
   position: absolute;
   right: var(--space-edge);
   z-index: 4;
+}
+
+.birb-split__home {
+  top: var(--space-edge);
+  display: block;
+  width: 45px;
   height: 45px;
   border: 0;
   border-radius: var(--radius-control);
@@ -173,25 +179,16 @@
               background-color 120ms ease, color 120ms ease;
 }
 
-.birb-split__home {
-  top: var(--space-edge);
-  display: block;
-  width: 45px;
-}
-
+// The guess submit's own chrome -- background, label colour, the hover/active/
+// focus states -- lives in .u-button now, shared with every other primary
+// button in the app (the login form's submit included). Only the position
+// that makes this one a corner of the split view stays here.
 .birb-split__button {
   // Lifted off the edge inset the home button uses. The home button is tucked
   // into its corner; this one is a target you aim for, and the extra few
   // pixels keep it clear of the window edge and of Leaflet's attribution
   // strip, which sits along the bottom of the map.
   bottom: calc(var(--space-edge) + 12px);
-  padding: 0 1.25rem;
-  // Not --colour-pink-deep, which is what the home icon is drawn in: the same
-  // pink behind a word instead of a stroke is 1.27:1 and unreadable.
-  color: var(--colour-ink);
-  font: inherit;
-  font-weight: 600;
-  cursor: pointer;
 }
 
 // The SVG is inlined into the page, so its shapes are ordinary elements and
@@ -220,52 +217,32 @@
   filter: drop-shadow(0 3px 6px rgb(0 0 0 / 0.25));
 }
 
-.birb-split__button:hover:not(:disabled) {
-  text-decoration: underline;
-  text-underline-offset: 3px;
-}
-
 .birb-split__home:hover svg rect { fill: var(--colour-pink-hover); }
 .birb-split__home:hover svg path { stroke: var(--colour-pink-deep-hover); }
 
 // Past its resting size, so the press is felt against the hover rather than
 // against nothing -- on a touch screen :hover sticks after the tap, and a
 // press that only returned to 1 would look like the button had not moved.
-.birb-split__home:active,
-.birb-split__button:active:not(:disabled) {
+.birb-split__home:active {
   transform: scale(0.94);
   filter: none;
 }
 
-.birb-split__home:focus-visible,
-.birb-split__button:focus-visible {
+.birb-split__home:focus-visible {
   outline: 3px solid var(--colour-pink-deep);
   outline-offset: 2px;
-}
-
-// No pin placed yet. Sits still and takes nothing, but stays in the corner
-// rather than appearing on the first click -- the corner is where you look for
-// it, and a control that materialises is a control you have to find.
-//
-// Drawn with a paler ground rather than turned down with opacity: the button
-// is opaque in every state, so the map never shows through it.
-.birb-split__button:disabled {
-  background-color: var(--colour-pink-mute);
-  cursor: not-allowed;
 }
 
 // A button that jumps is a button that hurts, for some people literally. The
 // colours still respond; only the movement stops.
 @media (prefers-reduced-motion: reduce) {
   .birb-split__home,
-  .birb-split__button,
   .birb-split__slider-grip {
     transition: none;
   }
 
   .birb-split__home:hover,
   .birb-split__home:active,
-  .birb-split__button:active,
   .birb-split__slider:active .birb-split__slider-grip {
     transform: none;
   }

@@ -13,11 +13,7 @@
       </div>
     <% end %>
 
-    <h1 class="birb-index__wordmark">
-      <%# Decorative: the word beside it already names the site. %>
-      <%= image_tag "birbs/birb-mark.png", alt: "", class: "birb-index__mark" %>
-      Birbguessr
-    </h1>
+    <%= render "shared/wordmark", tag_name: :h1 %>
 
     <%# Not in the frame, and the only way to reach the posting form -- there is
         no other link to it anywhere in the app. %>
