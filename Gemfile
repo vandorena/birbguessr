@@ -8,7 +8,7 @@ gem "propshaft"
 # force_ruby_platform: the precompiled pg-*-arm64-darwin gem segfaults in PG.connect
 # when called from a forked child process, which is exactly what Solid Queue's supervisor
 # does. Building from source against the local libpq avoids it.
-gem "pg", "~> 1.1", force_ruby_platform: true
+gem "pg", "~> 1.7", force_ruby_platform: true
 # Use the Puma web server [https://github.com/puma/puma]
 gem "puma", ">= 5.0"
 # Use JavaScript with ESM import maps [https://github.com/rails/importmap-rails]
